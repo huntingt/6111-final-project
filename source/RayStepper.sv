@@ -3,6 +3,8 @@
  * (a position and a direction) and an AABB then return the position
  * along the ray where it just exits the bounding box.
  */
+
+/* verilator lint_off UNUSED */
 module RayStepper #(
     parameter WIDTH=16
     )(
@@ -23,6 +25,11 @@ module RayStepper #(
     output logic [WIDTH-1:0] vp [2:0]
     );
     
-    
+    assign outOfBounds = 0;
+    assign done = 0;
+    assign vp[0] = 0;
+    assign vp[1] = 0;
+    assign vp[2] = 0;
 
 endmodule: RayStepper
+/* verilator lint_on UNUSED */
