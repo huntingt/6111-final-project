@@ -1,5 +1,4 @@
-# volume-ray
-6.111 Final Project
+# 6.111 Final Project
 
 In order to run the tests you must install:
 - verilator

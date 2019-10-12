@@ -35,13 +35,51 @@ void RayStepper::setPosition(vector<int> q){
     dut->q[1] = q.at(1);
     dut->q[2] = q.at(2);
 }
+void RayStepper::setDirection(vector<int> v){
+    dut->v[0] = v.at(0);
+    dut->v[1] = v.at(1);
+    dut->v[2] = v.at(2);
+}
 
-tuple<vector<int>, int> propogate(vector<int> q, int n){
+tuple<vector<int>, int>
+RayStepper::propogate(vector<int> q, vector<int> v, int n){
+    auto bounds = getBounds(q, n, bitWidth);
+
+    setLower(get<0>(bounds));
+    setUpper(get<1>(bounds));
+    setPosition(q);
+    setDirection(v);
+
+    const long startCycles = cycles;
     
+    // give the start pulse
+    dut->start = 1;
+    step();
+    dut->start = 0;
+
+    const int timeout = 64;
+    for (int i = 0; i < timeout; i++) {
+        if (dut->done) {
+            break;
+        }
+        step();
+    }
+
+    if (!dut->done) {
+        throw runtime_error("timed out after " +
+                to_string(timeout) + " cycles");
+    }
+
+    if(n == 0 && !dut->outOfBounds) {
+        throw runtime_error("expected out of bounds");
+    }
+
+    vector<int> newDirection = {dut->vp[0], dut->vp[1], dut->vp[2]};
+    return make_tuple(newDirection, cycles - startCycles);
 }
 
 tuple<vector<int>, vector<int>>
-RayStepper::getBounds(vector<int> q, int n){
+RayStepper::getBounds(vector<int> q, int n, int bitWidth){
     const int mask = ~(int)(pow(2, bitWidth - n) - 1);
 
     vector<int> lower;
@@ -64,9 +102,10 @@ void RayStepper::step(){
     dut->clock = 1;
     dut->eval();
     dut->clock = 0;
+    cycles += 1;
 }
     
-long RayStepper::cycles(){ return cycle; }
+long RayStepper::getCycles(){ return cycles; }
 
 RayStepper::~RayStepper(){
     dut->final();
