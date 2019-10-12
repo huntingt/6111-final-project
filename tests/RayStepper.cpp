@@ -79,25 +79,18 @@ RayStepper::propagate(vector<int> q, vector<int> v, int n){
     const int timeout = 64;
     for (int i = 0; i < timeout; i++) {
         if (dut->done) {
-            break;
+            if(dut->outOfBounds) {
+                return {};
+            } else {
+                return vector<int>{dut->vp[0], dut->vp[1], dut->vp[2]};
+            }
         }
         step();
     }
 
-    if (!dut->done) {
-        throw runtime_error("timed out after " +
-                to_string(timeout) + " cycles");
-    }
-
-    if(n == 0 && !dut->outOfBounds) {
-        throw runtime_error("expected out of bounds");
-    }
+    throw runtime_error("timed out after " +
+            to_string(timeout) + " cycles");
     
-    if(dut->outOfBounds) {
-        return {};
-    } else {
-        return (vector<int>){dut->vp[0], dut->vp[1], dut->vp[2]};
-    }
 }
 
 tuple<vector<int>, vector<int>>
