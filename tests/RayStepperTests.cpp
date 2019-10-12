@@ -44,7 +44,7 @@ TEST_CASE("test the actual ray stepper module"){
 
     SECTION("test a small cube"){
         vector<int> q = {10, 20, 30};
-        vector<int> v = {1, 0, 0};
+        vector<int> v = RayStepper::normalize({1, 0, 0}, dut.bitWidth);
         
         auto result = dut.propogate(q, v, dut.bitWidth);
         
@@ -54,7 +54,7 @@ TEST_CASE("test the actual ray stepper module"){
     SECTION("test out of bounds across large cube"){
         vector<int> q0 = {0, 0, 0};
         vector<int> q1 = {1, 1, 1};
-        vector<int> v = {1, 1, 1};
+        vector<int> v = RayStepper::normalize({1, 1, 1}, dut.bitWidth);
         
         dut.propogate(q0, v, 0);
         dut.propogate(q1, v, 0);

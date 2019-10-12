@@ -42,6 +42,8 @@ class RayStepper{
     static tuple<vector<int>, vector<int>>
         getBounds(vector<int> q, int n, int bitWidth);
 
+    static vector<int> normalize(vector<int> v, int bitWidth);
+
     void reset();
     void step();
     

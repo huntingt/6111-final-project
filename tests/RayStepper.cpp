@@ -93,6 +93,22 @@ RayStepper::getBounds(vector<int> q, int n, int bitWidth){
     return make_tuple(lower, upper);
 }
 
+vector<int> RayStepper::normalize(vector<int> v, int bitWidth){
+    const int unit = 0.9 * pow(2, bitWidth) - 1;
+    
+    double norm = 0;
+    for(int vi : v){
+        norm += pow(vi, 2);
+    }
+
+    vector<int> result;
+    for(int vi : v){
+        result.push_back(vi / norm * unit);
+    }
+
+    return result;
+}
+
 void RayStepper::reset(){
     dut->reset = 1;
     step();
