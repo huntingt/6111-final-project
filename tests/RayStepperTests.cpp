@@ -5,6 +5,7 @@
 #include <iostream>
 #include <tuple>
 #include <vector>
+#include <optional>
 #include <math.h>
 #include "RayStepper.h"
 
@@ -46,17 +47,19 @@ TEST_CASE("test the actual ray stepper module"){
         vector<int> q = {10, 20, 30};
         vector<int> v = RayStepper::normalize({1, 0, 0}, dut.bitWidth);
         
-        auto result = dut.propogate(q, v, dut.bitWidth);
+        auto result = dut.propagate(q, v, dut.bitWidth);
         
+        REQUIRE( result.has_value() );
+
         vector<int> expected = {11, 20, 30};
-        REQUIRE( get<0>(result) == expected );
+        REQUIRE( result.value() == expected );
     }
     SECTION("test out of bounds across large cube"){
         vector<int> q0 = {0, 0, 0};
         vector<int> q1 = {1, 1, 1};
         vector<int> v = RayStepper::normalize({1, 1, 1}, dut.bitWidth);
         
-        dut.propogate(q0, v, 0);
-        dut.propogate(q1, v, 0);
+        REQUIRE( !dut.propagate(q0, v, 0).has_value() );
+        REQUIRE( !dut.propagate(q1, v, 0).has_value() );
     }
 }

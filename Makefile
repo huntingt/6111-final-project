@@ -1,5 +1,5 @@
 VFLAGS = -Wall\
-		 -CFLAGS "-std=c++11"\
+		 -CFLAGS "-std=c++17"\
 		 -Isource\
 		 -Mdir verilated
 

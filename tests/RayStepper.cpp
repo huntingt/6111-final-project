@@ -41,16 +41,35 @@ void RayStepper::setDirection(vector<int> v){
     dut->v[2] = v.at(2);
 }
 
-tuple<vector<int>, int>
-RayStepper::propogate(vector<int> q, vector<int> v, int n){
+bool RayStepper::propagate(vector<int> q, vector<int> v, Octree<bool,BIT_WIDTH> tree){
+    const int timeout = 64;
+
+    for(int i = 0; i < timeout; i++){
+        if (tree.at(q)){
+            return true;
+        }
+
+        auto depth = tree.depth(q);
+        auto maybeQ = propagate(q, v, depth);
+
+        if (!maybeQ.has_value()) {
+            return false;
+        }
+
+        q = maybeQ.value();
+    }
+    throw runtime_error("timed out after " +
+                        to_string(timeout) + " cycles");
+}
+
+optional<vector<int>>
+RayStepper::propagate(vector<int> q, vector<int> v, int n){
     auto bounds = getBounds(q, n, bitWidth);
 
     setLower(get<0>(bounds));
     setUpper(get<1>(bounds));
     setPosition(q);
     setDirection(v);
-
-    const long startCycles = cycles;
     
     // give the start pulse
     dut->start = 1;
@@ -73,9 +92,12 @@ RayStepper::propogate(vector<int> q, vector<int> v, int n){
     if(n == 0 && !dut->outOfBounds) {
         throw runtime_error("expected out of bounds");
     }
-
-    vector<int> newDirection = {dut->vp[0], dut->vp[1], dut->vp[2]};
-    return make_tuple(newDirection, cycles - startCycles);
+    
+    if(dut->outOfBounds) {
+        return {};
+    } else {
+        return (vector<int>){dut->vp[0], dut->vp[1], dut->vp[2]};
+    }
 }
 
 tuple<vector<int>, vector<int>>

@@ -63,6 +63,6 @@ class Leaf: public Octree<T,B>{
 
     private:
     T value;
-}
+};
 
 #endif

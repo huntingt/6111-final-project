@@ -7,7 +7,11 @@
 #include <tuple>
 #include <exception>
 #include <string>
+#include <optional>
 #include "VRayStepper.h"
+#include "Octree.h"
+
+#define BIT_WIDTH 16
 
 using namespace std;
 
@@ -22,15 +26,20 @@ class RayStepper{
     void setDirection(vector<int> v);
 
     /*
-     * Propogate a ray inside an AABB
+     * Propagate a ray inside an AABB
      *
      * @param q initial position vector
      * @param n depth
-     * @return (new position, number of cycles)
+     * @return (new position, number of cycles) unless out of bounds
      */
-    tuple<vector<int>, int>
-        propogate(vector<int> q, vector<int> v, int n);
+    optional<vector<int>>
+        propagate(vector<int> q, vector<int> v, int n);
     
+    /*
+     * Propagate a ray inside an Octree
+     */
+    bool propagate(vector<int> q, vector<int> v, Octree<bool,BIT_WIDTH> tree);
+
     /*
      * Generate bounds for an octree of side length 2**bitDepth
      * 
@@ -54,7 +63,7 @@ class RayStepper{
 
     ~RayStepper();
 
-    int bitWidth = 16;
+    int bitWidth = BIT_WIDTH;
     private:
     VRayStepper* dut;
 
