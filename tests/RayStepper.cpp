@@ -82,7 +82,7 @@ RayStepper::propagate(vector<int> q, vector<int> v, int n){
             if(dut->outOfBounds) {
                 return {};
             } else {
-                return vector<int>{dut->vp[0], dut->vp[1], dut->vp[2]};
+                return vector<int>{dut->qp[0], dut->qp[1], dut->qp[2]};
             }
         }
         step();
