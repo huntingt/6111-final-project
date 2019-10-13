@@ -41,15 +41,15 @@ void RayStepper::setDirection(vector<int> v){
     dut->v[2] = v.at(2);
 }
 
-bool RayStepper::propagate(vector<int> q, vector<int> v, Octree<bool,BIT_WIDTH> tree){
+bool RayStepper::propagate(vector<int> q, vector<int> v, Octree<bool>* tree){
     const int timeout = 64;
 
     for(int i = 0; i < timeout; i++){
-        if (tree.at(q)){
+        if (tree->at(q, bitWidth)){
             return true;
         }
 
-        auto depth = tree.depth(q);
+        auto depth = tree->depth(q);
         auto maybeQ = propagate(q, v, depth);
 
         if (!maybeQ.has_value()) {

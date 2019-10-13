@@ -5,35 +5,35 @@
 
 using namespace std;
 
-template <class T, int B>
+template <class T>
 class Octree{
     public:
-    virtual T at(vector<int> location) = 0;
+    virtual T at(vector<int> location, int bits) = 0;
     virtual int depth(vector<int> location) = 0;
 };
 
-template <class T, int B>
-class Branch: public Octree<T,B>{
+template <class T>
+class Branch: public Octree<T>{
     public:
-    Branch(vector<Octree<T,B-1>> children){
+    Branch(vector<Octree<T>*> children){
         this->children = children;
     }
 
-    T at(vector<int> location){
-        const bool x = 1<<(B-1) & location.at(0);
-        const bool y = 1<<(B-1) & location.at(1);
-        const bool z = 1<<(B-1) & location.at(2);
+    T at(vector<int> location, int bits){
+        const bool x = 1<<(bits-1) & location.at(0);
+        const bool y = 1<<(bits-1) & location.at(1);
+        const bool z = 1<<(bits-1) & location.at(2);
 
         int index = x + 2*y + 4*z;
 
-        return children.at(index).at(location);
+        return children.at(index)->at(location, bits - 1);
     }
 
     int depth(vector<int> location){
         int maxDepth = 0;
 
         for(auto child: children){
-            const int depth = child.depth();
+            const int depth = child->depth(location);
             if(depth > maxDepth){
                 maxDepth = depth;
             }
@@ -41,23 +41,24 @@ class Branch: public Octree<T,B>{
 
         return maxDepth + 1;
     }
-
+    
+    //TODO: fix memory leak conditions for this class
     private:
-    vector<Octree<T,B-1>> children;
+    vector<Octree<T>*> children;
 };
 
-template <class T, int B>
-class Leaf: public Octree<T,B>{
+template <class T>
+class Leaf: public Octree<T>{
     public:
     Leaf(T value){
         this->value = value;
     }
 
-    T at(vector<int> location){
+    T at(vector<int> location, int bits){
         return value;
     }
 
-    int depth(){
+    int depth(vector<int> location){
         return 0;
     }
 

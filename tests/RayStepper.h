@@ -11,8 +11,6 @@
 #include "VRayStepper.h"
 #include "Octree.h"
 
-#define BIT_WIDTH 16
-
 using namespace std;
 
 class RayStepper{
@@ -38,7 +36,7 @@ class RayStepper{
     /*
      * Propagate a ray inside an Octree
      */
-    bool propagate(vector<int> q, vector<int> v, Octree<bool,BIT_WIDTH> tree);
+    bool propagate(vector<int> q, vector<int> v, Octree<bool>* tree);
 
     /*
      * Generate bounds for an octree of side length 2**bitDepth
@@ -63,7 +61,7 @@ class RayStepper{
 
     ~RayStepper();
 
-    int bitWidth = BIT_WIDTH;
+    static const int bitWidth = 16;
     private:
     VRayStepper* dut;
 
