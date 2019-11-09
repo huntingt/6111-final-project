@@ -16,19 +16,19 @@ int main() {
         new Leaf<bool>(false),//...
         new Leaf<bool>(false),
 
+        new Leaf<bool>(false),
         new Leaf<bool>(true),
         new Leaf<bool>(true),
-        new Leaf<bool>(true),
-        new Leaf<bool>(true)
+        new Leaf<bool>(false)
     };
     Octree<bool>* tree = new Branch<bool>(children);
 
     RayStepper dut;
 
-    const vector<int> camera_q = {0, 0, 0};
-    const vector<int> camera_v = {500, 500, 500};
-    const vector<int> xstep = {1, -1, 0};
-    const vector<int> ystep = {0, 1, -1};
+    const vector<int> camera_q = {40000, 40000, 0};
+    const vector<int> camera_v = {0, 0, 400};
+    const vector<int> xstep = {1, 0, 0};
+    const vector<int> ystep = {0, 1, 0};
 
     Mat image = Mat(500, 500, CV_8U);
     for(int i = 0; i < image.rows; i++){
