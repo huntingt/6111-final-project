@@ -35,7 +35,6 @@ module RayStepper #(
     logic [WIDTH-1:0] accumulator [2:0];
     // 1 extra bit for to round up
     logic signed [WIDTH:0] step [2:0];
-    logic signed [WIDTH:0] nextStep [2:0];
 
     logic signed [WIDTH-1:0] roundedStep [2:0];
 
@@ -64,8 +63,6 @@ module RayStepper #(
                                          && proposedPosition[i] <= uPlusOne[i];
             onAABB[i] = lMinusOne[i] == proposedPosition[i]
                                          || proposedPosition[i] == uPlusOne[i];
-            
-            nextStep[i] = {step[i][WIDTH], step[i][WIDTH:1]};
 
             qp[i] = accumulator[i];
         end
@@ -85,7 +82,7 @@ module RayStepper #(
             // start
             done <= 0;
         end else if (!done) begin
-            if (1) begin
+            if (0) begin
                 $display("on: %d, %d, %d", onAABB[0], onAABB[1], onAABB[2]);
                 $display("in: %d, %d, %d", inAABB[0], inAABB[1], inAABB[2]);
                 $display("lower: %d, %d, %d", l[0], l[1], l[2]);
@@ -111,12 +108,8 @@ module RayStepper #(
                 end
             end
             
-            if (nextStep[0] != 0 ||
-                nextStep[1] != 0 ||
-                nextStep[2] != 0) begin
-                for (int i = 0; i < 3; i++) begin
-                    step[i] <= nextStep[i];
-                end
+            for (int i = 0; i < 3; i++) begin
+                step[i] <= {step[i][WIDTH], step[i][WIDTH:1]};
             end
         end
     end
