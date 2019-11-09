@@ -17,16 +17,16 @@ int main() {
         new Leaf<bool>(false),
 
         new Leaf<bool>(false),
+        new Leaf<bool>(true),
         new Leaf<bool>(false),
-        new Leaf<bool>(false),
-        new Leaf<bool>(true)
+        new Leaf<bool>(false)
     };
     Octree<bool>* tree = new Branch<bool>(children);
 
     RayStepper dut;
 
-    const vector<int> camera_q = {0, 0, 0};
-    const vector<int> camera_v = {0, 0, 1000};
+    const vector<int> camera_q = {32000, 32000, 0};
+    const vector<int> camera_v = {0, 0, 100};
     const vector<int> xstep = {1, 0, 0};
     const vector<int> ystep = {0, 1, 0};
 

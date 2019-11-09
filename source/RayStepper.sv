@@ -32,36 +32,39 @@ module RayStepper #(
     output logic [WIDTH-1:0] qp [2:0]
     );
 
-    // extra bit allows outOfBounds detection
-    logic [WIDTH:0] accumulator [2:0];
-    // 2 extra bits to ensure that vector is large enough
+    logic [WIDTH-1:0] accumulator [2:0];
     // 1 extra bit for to round up
-    logic [WIDTH+2:0] step [2:0];
+    logic [WIDTH:0] step [2:0];
 
-    logic [WIDTH+1:0] roundedStep [2:0];
-    logic [WIDTH+1:0] proposedPosition [2:0];
-    
-    
-    logic [WIDTH+1:0] lMinusOne [2:0];
-    logic [WIDTH+1:0] uPlusOne [2:0];
+    logic [WIDTH-1:0] roundedStep [2:0];
+
+    // 2 extra bits for out of bounds detection
+    // in bounds is when 2 MSB are both zero
+    logic signed [WIDTH+1:0] proposedPosition [2:0];
+    logic signed [WIDTH+1:0] lMinusOne [2:0];
+    logic signed [WIDTH+1:0] uPlusOne [2:0];
 
     logic inAABB [2:0];
     logic onAABB [2:0];
 
     always_comb begin
         for (int i = 0; i < 3; i++) begin
-            roundedStep[i] = step[i][WIDTH+2:1] + {{WIDTH{1'b0}}, 1'b0, step[i][0]};
-            proposedPosition[i] = accumulator[i] + roundedStep[i];
+            // round if odd and positive
+            roundedStep[i] = step[i][WIDTH:1] +
+                (step[i][WIDTH] && step[i][0] ? 1 : 0);
+            // sign extend the step value
+            proposedPosition[i] = {2'b0, accumulator[i]} +
+                {{2{roundedStep[i][WIDTH-1]}}, roundedStep[i]};
             
             lMinusOne[i] = {2'b0, l[i]} - 1;
             uPlusOne[i]  = {2'b0, u[i]} + 1;
 
-            inAABB[i] = signed'(lMinusOne[i]) <= signed'(proposedPosition[i])
+            inAABB[i] = lMinusOne[i] <= proposedPosition[i]
                                          && proposedPosition[i] <= uPlusOne[i];
             onAABB[i] = lMinusOne[i] == proposedPosition[i]
                                          || proposedPosition[i] == uPlusOne[i];
             
-            qp[i] = accumulator[i][WIDTH-1:0];
+            qp[i] = accumulator[i];
         end
     end
 
@@ -72,38 +75,40 @@ module RayStepper #(
         end else if (start) begin
             // load registers
             for (int i = 0; i < 3; i++) begin
-                step[i] <= {v[i], 3'b0};
-                accumulator[i] <= {1'b0, q[i]};
+                step[i] <= {v[i], 1'b0};
+                accumulator[i] <= q[i];
             end
             
             // start
             done <= 0;
         end else if (!done) begin
-            //$display("on: %d, %d, %d", onAABB[0], onAABB[1], onAABB[2]);
-            //$display("in: %d, %d, %d", inAABB[0], inAABB[1], inAABB[2]);
-            //$display("lower: %d, %d, %d", l[0], l[1], l[2]);
-            //$display("upper: %d, %d, %d", u[0], u[1], u[2]);
-            //$display("working: %d, %d, %d", accumulator[0], accumulator[1], accumulator[2]);
-            //$display("pos: %d, %d, %d", proposedPosition[0], proposedPosition[1], proposedPosition[2]);
-            
+            if (0) begin
+                $display("on: %d, %d, %d", onAABB[0], onAABB[1], onAABB[2]);
+                $display("in: %d, %d, %d", inAABB[0], inAABB[1], inAABB[2]);
+                $display("lower: %d, %d, %d", l[0], l[1], l[2]);
+                $display("upper: %d, %d, %d", u[0], u[1], u[2]);
+                $display("working: %d, %d, %d", accumulator[0], accumulator[1], accumulator[2]);
+                $display("pos: %d, %d, %d", proposedPosition[0], proposedPosition[1], proposedPosition[2]);
+            end
+
             // commit changes if they fit
             if (inAABB[0] && inAABB[1] && inAABB[2]) begin
                 for (int i = 0; i < 3; i++) begin
-                    accumulator[i] <= proposedPosition[i][WIDTH:0];
+                    accumulator[i] <= proposedPosition[i][WIDTH-1:0];
                 end
-            end
-
-            if (onAABB[0] || onAABB[1] || onAABB[2]) begin
-                done <= 1;
-                if (proposedPosition[0][WIDTH] ||
-                    proposedPosition[1][WIDTH] ||
-                    proposedPosition[2][WIDTH]) begin
-                    outOfBounds <= 1;
+            
+                if (onAABB[0] || onAABB[1] || onAABB[2]) begin
+                    done <= 1;
+                    if (proposedPosition[0][WIDTH+1:WIDTH] != 0 ||
+                        proposedPosition[1][WIDTH+1:WIDTH] != 0 ||
+                        proposedPosition[2][WIDTH+1:WIDTH] != 0) begin
+                        outOfBounds <= 1;
+                    end
                 end
             end
             
             for (int i = 0; i < 3; i++) begin
-                step[i] <= {step[i][WIDTH+2], step[i][WIDTH+2:1]};
+                step[i] <= {step[i][WIDTH], step[i][WIDTH:1]};
             end
         end
     end

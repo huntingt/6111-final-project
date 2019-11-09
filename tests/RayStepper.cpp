@@ -58,6 +58,8 @@ bool RayStepper::propagate(vector<int> q, vector<int> v, Octree<bool>* tree){
 
         q = maybeQ.value();
     }
+    printf("final q: %i, %i, %i\n", q.at(0), q.at(1), q.at(2));
+    printf("final v: %i, %i, %i\n", v.at(0), v.at(1), v.at(2));
     throw runtime_error("octree traversal timed out after " +
                         to_string(timeout) + " cycles");
 }
@@ -76,7 +78,7 @@ RayStepper::propagate(vector<int> q, vector<int> v, int n){
     step();
     dut->start = 0;
     
-    const int timeout = 64;
+    const int timeout = 20;
     for (int i = 0; i < timeout; i++) {
         step();
         
