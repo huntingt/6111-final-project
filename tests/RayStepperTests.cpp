@@ -85,4 +85,10 @@ TEST_CASE("test the actual ray stepper module"){
         
         REQUIRE( !result.has_value() );
     }
+    SECTION("test rounding system"){
+        vector<int> v = {0, 20252, 0};
+        vector<int> q = {0, 32000, 0};
+    
+        auto result = dut.propagate(q, v, 1);
+    }
 }

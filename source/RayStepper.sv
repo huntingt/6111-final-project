@@ -34,9 +34,10 @@ module RayStepper #(
 
     logic [WIDTH-1:0] accumulator [2:0];
     // 1 extra bit for to round up
-    logic [WIDTH:0] step [2:0];
+    logic signed [WIDTH:0] step [2:0];
+    logic signed [WIDTH:0] nextStep [2:0];
 
-    logic [WIDTH-1:0] roundedStep [2:0];
+    logic signed [WIDTH-1:0] roundedStep [2:0];
 
     // 2 extra bits for out of bounds detection
     // in bounds is when 2 MSB are both zero
@@ -51,7 +52,7 @@ module RayStepper #(
         for (int i = 0; i < 3; i++) begin
             // round if odd and positive
             roundedStep[i] = step[i][WIDTH:1] +
-                (step[i][WIDTH] && step[i][0] ? 1 : 0);
+                (!step[i][WIDTH] && step[i][0] ? 1 : 0);
             // sign extend the step value
             proposedPosition[i] = {2'b0, accumulator[i]} +
                 {{2{roundedStep[i][WIDTH-1]}}, roundedStep[i]};
@@ -64,6 +65,8 @@ module RayStepper #(
             onAABB[i] = lMinusOne[i] == proposedPosition[i]
                                          || proposedPosition[i] == uPlusOne[i];
             
+            nextStep[i] = {step[i][WIDTH], step[i][WIDTH:1]};
+
             qp[i] = accumulator[i];
         end
     end
@@ -82,13 +85,14 @@ module RayStepper #(
             // start
             done <= 0;
         end else if (!done) begin
-            if (0) begin
+            if (1) begin
                 $display("on: %d, %d, %d", onAABB[0], onAABB[1], onAABB[2]);
                 $display("in: %d, %d, %d", inAABB[0], inAABB[1], inAABB[2]);
                 $display("lower: %d, %d, %d", l[0], l[1], l[2]);
                 $display("upper: %d, %d, %d", u[0], u[1], u[2]);
                 $display("working: %d, %d, %d", accumulator[0], accumulator[1], accumulator[2]);
-                $display("pos: %d, %d, %d", proposedPosition[0], proposedPosition[1], proposedPosition[2]);
+                $display("step: %d, %d, %d", step[0]/2, step[1]/2, step[2]/2);
+                $display("pos: %d, %d, %d\n", proposedPosition[0], proposedPosition[1], proposedPosition[2]);
             end
 
             // commit changes if they fit
@@ -107,8 +111,12 @@ module RayStepper #(
                 end
             end
             
-            for (int i = 0; i < 3; i++) begin
-                step[i] <= {step[i][WIDTH], step[i][WIDTH:1]};
+            if (nextStep[0] != 0 ||
+                nextStep[1] != 0 ||
+                nextStep[2] != 0) begin
+                for (int i = 0; i < 3; i++) begin
+                    step[i] <= nextStep[i];
+                end
             end
         end
     end
