@@ -48,7 +48,6 @@ TEST_CASE("test the actual ray stepper module"){
         vector<int> v = RayStepper::normalize({1, 0, 0}, dut.bitWidth);
         
         auto result = dut.propagate(q, v, dut.bitWidth);
-        
         REQUIRE( result.has_value() );
 
         vector<int> expected = {11, 20, 30};

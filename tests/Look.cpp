@@ -42,7 +42,6 @@ int main() {
             }
 
             auto ray = RayStepper::normalize(preray, RayStepper::bitWidth);
-
             image.at<uchar>(i,j) = dut.propagate(camera_q, ray, tree)? 0 : 255;
         }
     }

@@ -27,7 +27,7 @@ void RayStepper::setLower(vector<int> lower){
 void RayStepper::setUpper(vector<int> upper){
     dut->u[0] = upper.at(0);
     dut->u[1] = upper.at(1);
-    dut->u[1] = upper.at(2);
+    dut->u[2] = upper.at(2);
 }
 
 void RayStepper::setPosition(vector<int> q){
@@ -58,7 +58,7 @@ bool RayStepper::propagate(vector<int> q, vector<int> v, Octree<bool>* tree){
 
         q = maybeQ.value();
     }
-    throw runtime_error("timed out after " +
+    throw runtime_error("octree traversal timed out after " +
                         to_string(timeout) + " cycles");
 }
 
@@ -75,9 +75,11 @@ RayStepper::propagate(vector<int> q, vector<int> v, int n){
     dut->start = 1;
     step();
     dut->start = 0;
-
+    
     const int timeout = 64;
     for (int i = 0; i < timeout; i++) {
+        step();
+        
         if (dut->done) {
             if(dut->outOfBounds) {
                 return {};
@@ -85,9 +87,9 @@ RayStepper::propagate(vector<int> q, vector<int> v, int n){
                 return vector<int>{dut->qp[0], dut->qp[1], dut->qp[2]};
             }
         }
-        step();
     }
-
+    printf("v: %i, %i, %i\nq: %i, %i, %i\nn: %i\n",
+            v.at(0), v.at(1), v.at(2), q.at(0), q.at(1), q.at(2), n);
     throw runtime_error("timed out after " +
             to_string(timeout) + " cycles");
     
@@ -104,17 +106,19 @@ RayStepper::getBounds(vector<int> q, int n, int bitWidth){
         lower.push_back(position &  mask);
         upper.push_back(position | ~mask);
     }
-
+    
     return make_tuple(lower, upper);
 }
 
 vector<int> RayStepper::normalize(vector<int> v, int bitWidth){
-    const int unit = 0.9 * pow(2, bitWidth) - 1;
+    const double unit = 0.9 * pow(2, bitWidth-1) - 1.0;
     
     double norm = 0;
     for(int vi : v){
         norm += pow(vi, 2);
     }
+
+    norm = pow(norm, 0.5);
 
     vector<int> result;
     for(int vi : v){
@@ -133,6 +137,7 @@ void RayStepper::step(){
     dut->clock = 1;
     dut->eval();
     dut->clock = 0;
+    dut->eval();
     cycles += 1;
 }
     

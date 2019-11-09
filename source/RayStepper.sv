@@ -40,6 +40,11 @@ module RayStepper #(
 
     logic [WIDTH+1:0] roundedStep [2:0];
     logic [WIDTH+1:0] proposedPosition [2:0];
+    
+    
+    logic [WIDTH+1:0] lMinusOne [2:0];
+    logic [WIDTH+1:0] uPlusOne [2:0];
+
     logic inAABB [2:0];
     logic onAABB [2:0];
 
@@ -47,10 +52,14 @@ module RayStepper #(
         for (int i = 0; i < 3; i++) begin
             roundedStep[i] = step[i][WIDTH+2:1] + {{WIDTH{1'b0}}, 1'b0, step[i][0]};
             proposedPosition[i] = accumulator[i] + roundedStep[i];
-            inAABB[i] = {2'b0, l[i]} - 1 <= proposedPosition[i]
-                                         && proposedPosition[i] <= {2'b0, u[i]} + 1;
-            onAABB[i] = {2'b0, l[i]} - 1 == proposedPosition[i]
-                                         || proposedPosition[i] == {2'b0, u[i]} + 1;
+            
+            lMinusOne[i] = {2'b0, l[i]} - 1;
+            uPlusOne[i]  = {2'b0, u[i]} + 1;
+
+            inAABB[i] = signed'(lMinusOne[i]) <= signed'(proposedPosition[i])
+                                         && proposedPosition[i] <= uPlusOne[i];
+            onAABB[i] = lMinusOne[i] == proposedPosition[i]
+                                         || proposedPosition[i] == uPlusOne[i];
             
             qp[i] = accumulator[i][WIDTH-1:0];
         end
@@ -70,6 +79,13 @@ module RayStepper #(
             // start
             done <= 0;
         end else if (!done) begin
+            //$display("on: %d, %d, %d", onAABB[0], onAABB[1], onAABB[2]);
+            //$display("in: %d, %d, %d", inAABB[0], inAABB[1], inAABB[2]);
+            //$display("lower: %d, %d, %d", l[0], l[1], l[2]);
+            //$display("upper: %d, %d, %d", u[0], u[1], u[2]);
+            //$display("working: %d, %d, %d", accumulator[0], accumulator[1], accumulator[2]);
+            //$display("pos: %d, %d, %d", proposedPosition[0], proposedPosition[1], proposedPosition[2]);
+            
             // commit changes if they fit
             if (inAABB[0] && inAABB[1] && inAABB[2]) begin
                 for (int i = 0; i < 3; i++) begin
