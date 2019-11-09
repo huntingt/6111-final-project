@@ -91,4 +91,39 @@ TEST_CASE("test the actual ray stepper module"){
     
         auto result = dut.propagate(q, v, 1);
     }
+    SECTION("test out of bounds"){
+        vector<int> v = {16606, 22917, 8287};
+        vector<int> q = {0, 0, 0};
+
+        auto result = dut.propagate(q, v, 1);
+
+        REQUIRE( result.has_value() );
+    }
+}
+
+TEST_CASE("test octree"){ 
+    vector<Octree<int>*> children = {
+        new Leaf<int>(0),
+        new Leaf<int>(1),
+        new Leaf<int>(2),
+        new Leaf<int>(3),
+
+        new Leaf<int>(4),
+        new Leaf<int>(5),
+        new Leaf<int>(6),
+        new Leaf<int>(7)
+    };
+    Octree<int>* tree = new Branch<int>(children);
+
+    SECTION("test octant setup"){
+        const int bits = 16;
+        REQUIRE( tree->at({    0,     0,     0}, bits) == 0 );
+        REQUIRE( tree->at({40000, 40000, 40000}, bits) == 7 );
+        REQUIRE( tree->at({40000,     0,     0}, bits) == 1 );
+        REQUIRE( tree->at({    0, 40000,     0}, bits) == 2 );
+        REQUIRE( tree->at({    0,     0, 40000}, bits) == 4 );
+        REQUIRE( tree->at({    0, 40000, 40000}, bits) == 6 );
+        REQUIRE( tree->at({40000,     0, 40000}, bits) == 5 );
+        REQUIRE( tree->at({40000, 40000,     0}, bits) == 3 );
+    }
 }

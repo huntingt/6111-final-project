@@ -11,24 +11,24 @@ using namespace std;
 
 int main() {
     vector<Octree<bool>*> children = {
-        new Leaf<bool>(false),
-        new Leaf<bool>(false),
-        new Leaf<bool>(false),
+        new Leaf<bool>(false),//0,0,0
+        new Leaf<bool>(false),//1,0,0
+        new Leaf<bool>(false),//...
         new Leaf<bool>(false),
 
-        new Leaf<bool>(false),
         new Leaf<bool>(true),
-        new Leaf<bool>(false),
-        new Leaf<bool>(false)
+        new Leaf<bool>(true),
+        new Leaf<bool>(true),
+        new Leaf<bool>(true)
     };
     Octree<bool>* tree = new Branch<bool>(children);
 
     RayStepper dut;
 
-    const vector<int> camera_q = {32000, 32000, 0};
-    const vector<int> camera_v = {0, 0, 100};
-    const vector<int> xstep = {1, 0, 0};
-    const vector<int> ystep = {0, 1, 0};
+    const vector<int> camera_q = {0, 0, 0};
+    const vector<int> camera_v = {500, 500, 500};
+    const vector<int> xstep = {1, -1, 0};
+    const vector<int> ystep = {0, 1, -1};
 
     Mat image = Mat(500, 500, CV_8U);
     for(int i = 0; i < image.rows; i++){

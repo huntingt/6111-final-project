@@ -81,6 +81,7 @@ module RayStepper #(
             
             // start
             done <= 0;
+            outOfBounds <= 0;
         end else if (!done) begin
             if (0) begin
                 $display("on: %d, %d, %d", onAABB[0], onAABB[1], onAABB[2]);
