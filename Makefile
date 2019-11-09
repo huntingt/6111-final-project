@@ -3,6 +3,8 @@ VFLAGS = -Wall\
 		 -Isource\
 		 -Mdir verilated
 
+export PKG_CONFIG_PATH=""
+
 stepper:
 	verilator $(VFLAGS)\
 		-cc RayStepper.sv\
@@ -12,8 +14,8 @@ stepper:
 
 look:
 	verilator $(VFLAGS)\
-		-CFLAGS "$(shell pkg-config --cflags opencv4)"\
-		-LDFLAGS "$(shell pkg-config --libs opencv4)"\
+		-CFLAGS "$(shell pkg-config --cflags opencv)"\
+		-LDFLAGS "$(shell pkg-config --libs opencv)"\
 		-cc RayStepper.sv\
 		--exe ../tests/Look.cpp ../tests/RayStepper.cpp
 	make -j -C verilated -f VRayStepper.mk VRayStepper

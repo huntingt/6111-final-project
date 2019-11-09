@@ -1,6 +1,5 @@
-#include <opencv2/core.hpp>
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/highgui.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
 #include <iostream>
 #include <vector>
 #include "Octree.h"
@@ -45,6 +44,8 @@ int main() {
             image.at<uchar>(i,j) = dut.propagate(camera_q, ray, tree)? 0 : 255;
         }
     }
+
+    printf("completed %i pixels in %ld cycles!\n", image.rows*image.cols, dut.getCycles());
 
     namedWindow("Display Window", WINDOW_AUTOSIZE);
     imshow("Display Window", image);

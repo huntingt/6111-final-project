@@ -3,6 +3,11 @@
 In order to run the tests you must install:
 - verilator
 - catch2 (testing library)
+- opencv2
+
+In order to run code that requires opencv2, you may need to set the
+path for pkg\_config. ``brew info opencv@2`` can be used to find the
+required command.
 
 The "source" directory contains the hdl, "bench" contains the hdl
 testbenches used to wrap interfaces, and "tests" contains the cpp
