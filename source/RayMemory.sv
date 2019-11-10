@@ -4,7 +4,6 @@ module RayMemory #(
     parameter DATA_WIDTH=24,
     parameter ADDRESS_WIDTH=32,
     
-    parameter MASTER_ID_WIDTH=8,
     parameter MASTER_ID=0,
     
     parameter MATERIAL_ADDRESS_WIDTH=8
@@ -35,7 +34,7 @@ module RayMemory #(
     // Material properties at that leaf node. Currently this
     // width is limited to a single data width, but it can be
     // easily extended in the future.
-    output logic [DATA_WIDTH-1:0] material
+    output logic [DATA_WIDTH-1:0] material,
 
     // Control signal used to write a 'pixel' pixel to pixelAddress
     input logic writePixel,
@@ -44,17 +43,11 @@ module RayMemory #(
 
     output logic ready,
     
-    MemoryBus.Master#(
-        .DATA_WIDTH(DATA_WIDTH),
-        .ADDRESS_WIDTH(ADDRESS_WIDTH),
-        .MASTER_ID_WIDTH(MASTER_ID_WIDTH)
-        ) bus
+    MemoryBus.Master bus
     );
 
     parameter TREE_OCTANT_SELECT = 3;
     parameter TREE_NODE_ADDRESS_SIZE = DATA_WIDTH;
-    parameter TREE_NODE_ADDRESS_PADDING =
-        ADDRESS_WIDTH - TREE_NODE_ADDRESS_SIZE - TREE_OCTANT_SELECT;
 
     parameter MATERIAL_MASK_SIZE = DATA_WIDTH - MATERIAL_ADDRESS_WIDTH;
 
@@ -96,6 +89,11 @@ module RayMemory #(
     end
 
     always_ff @(posedge clock) begin
+        if (flush && bus.smID == MASTER_ID) begin
+            //TODO: nothing needs to be done yet
+            //TODO: change smID usage
+        end
+
         if (reset) begin
             state <= IDLE;
             depth <= 0;
@@ -116,7 +114,7 @@ module RayMemory #(
 
                 depth <= 1;
                 
-                bus.msAddress <= treeAddress + {0, octantSelect};
+                bus.msAddress <= treeAddress + ADDRESS_WIDTH'(octantSelect);
                 bus.msWrite <= 0;
                 bus.msValid <= 1;
             end
@@ -138,7 +136,7 @@ module RayMemory #(
                     state <= MATERIAL_SEND;
 
                     bus.msAddress <= materialAddress +
-                        ADDRESSS_WIDTH'(bus.smData[MATERIAL_ADDRESS_WIDTH-1:0]);
+                        ADDRESS_WIDTH'(bus.smData[MATERIAL_ADDRESS_WIDTH-1:0]);
                     bus.msWrite <= 0;
                     bus.msValid <= 1;
                 end else begin

@@ -17,7 +17,7 @@ module RayMemoryTB #(
     input logic traverse,
     input logic [POSITION_WIDTH-1:0] position [2:0],
     output logic [3:0] depth,
-    output logic [DATA_WIDTH-1:0] material
+    output logic [DATA_WIDTH-1:0] material,
     input logic writePixel,
     input logic [23:0] pixel,
     input logic [ADDRESS_WIDTH-1:0] pixelAddress,
@@ -33,7 +33,7 @@ module RayMemoryTB #(
     input logic [MASTER_ID_WIDTH-1:0] smID,
     input logic [DATA_WIDTH-1:0] smData,
     output logic smReady,
-    output logic smValid
+    input logic smValid
     );
 
     MemoryBus#(
@@ -52,13 +52,12 @@ module RayMemoryTB #(
     assign bus.smID = smID;
     assign bus.smData = smData;
     assign smReady = bus.smReady;
-    assign smValid = bus.smValid;
+    assign bus.smValid = smValid;
 
     RayMemory#(
         .POSITION_WIDTH(POSITION_WIDTH),
         .DATA_WIDTH(DATA_WIDTH),
         .ADDRESS_WIDTH(ADDRESS_WIDTH),
-        .MASTER_ID_WIDTH(MASTER_ID_WIDTH),
         .MASTER_ID(MASTER_ID),
         .MATERIAL_ADDRESS_WIDTH(MATERIAL_ADDRESS_WIDTH)
     ) dut(

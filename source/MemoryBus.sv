@@ -42,7 +42,7 @@ interface MemoryBus #(
         input   smID,
         input   smData,
         output  smReady,
-        input   msValid
+        input   smValid
     );
 
     modport Slave(
@@ -56,6 +56,6 @@ interface MemoryBus #(
         output  smID,
         output  smData,
         input   smReady,
-        output  msValid
+        output  smValid
     );
 endinterface: MemoryBus

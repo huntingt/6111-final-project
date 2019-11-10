@@ -16,7 +16,7 @@ memory:
 		-cc RayMemoryTB.sv\
 		--exe ../tests/RayMemoryTests.cpp
 	make -j -C verilated -f VRayMemoryTB.mk VRayMemoryTB
-	./verilated/VRayMemory
+	./verilated/VRayMemoryTB
 
 look:
 	verilator $(VFLAGS)\
