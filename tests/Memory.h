@@ -7,6 +7,8 @@
 #include <exception>
 #include <string>
 #include <tuple>
+#include <fstream>
+#include <algorithm>
 
 using namespace std;
 
@@ -121,6 +123,32 @@ class MemoryArray : public MemorySlave {
         }
 
         return {};
+    }
+
+    void loadFile(string filename) {
+        const int size = memory.size();
+
+        ifstream file(filename);
+        
+        string line;
+        int i = 0;
+        while(getline(file, line)){
+            if (line == "" || line.at(0) == '#') continue;
+            
+            //remove underscores
+            line.erase(remove(line.begin(), line.end(), '_'), line.end());
+
+            memory.at(i) = stoi(line, nullptr, 0);
+            i++;
+        }
+    }
+
+    void write(int i, int value) {
+        memory.at(i) = value;
+    }
+
+    int read(int i) {
+        return memory.at(i);
     }
 
     private:

@@ -106,8 +106,29 @@ TEST_CASE("test Memory.h"){
 }
 
 TEST_CASE("test RayMemory operation") {
-    RayMemory dut = RayMemory(124, 0, 0);
-    MemoryArray bram = MemoryArray(0, 1024);
+    RayMemory dut = RayMemory(124, 0, 1024);
+    
+    // material map gives the material index as its
+    // properety
+    MemoryArray material = MemoryArray(0, 256);
+    for (int i = 0; i < 256; i++) {
+        material.write(i, i);
+    }
 
-    dut.attach(bram);
+    MemoryArray tree = MemoryArray(1024, 1024);
+    tree.loadFile("tests/simple.oc");
+
+    MemoryArray frame = MemoryArray(512, 512);
+
+    REQUIRE( tree.read(0) == 0xFFFF00 );
+
+    dut.attach(&tree);
+    dut.attach(&material);
+    dut.attach(&frame);
+    
+    SECTION("write a pixel to the frame") {
+        dut.writePixel(512, 0x123456);
+
+        REQUIRE( frame.read(0) == 0x123456 );
+    }
 }
