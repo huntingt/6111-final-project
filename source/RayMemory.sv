@@ -74,6 +74,9 @@ module RayMemory #(
     // used to select the correct octant from an octree node
     logic [TREE_OCTANT_SELECT-1:0] octantSelect;
 
+    // set whether bus is currently receiving
+    logic busReceiving;
+
     always_comb begin
         ready = state == IDLE;
         bus.msID = MASTER_ID;
@@ -86,12 +89,13 @@ module RayMemory #(
             position[1][POSITION_WIDTH - depth - 1],
             position[0][POSITION_WIDTH - depth - 1]
         };
+
+        bus.smTaken = busReceiving && bus.smID == MASTER_ID;
     end
 
     always_ff @(posedge clock) begin
-        if (flush && bus.smID == MASTER_ID) begin
+        if (flush) begin
             //TODO: nothing needs to be done yet
-            //TODO: change smID usage
         end
 
         if (reset) begin
@@ -99,7 +103,7 @@ module RayMemory #(
             depth <= 0;
             
             // turn off bus
-            bus.smReady <= 0;
+            busReceiving <= 0;
             bus.msValid <= 0;
         end else if (state == IDLE) begin
             if (writePixel) begin
@@ -115,30 +119,28 @@ module RayMemory #(
                 depth <= 1;
                 
                 bus.msAddress <= treeAddress + ADDRESS_WIDTH'(octantSelect);
-                bus.msWrite <= 0;
                 bus.msValid <= 1;
+                bus.msWrite <= 0;
             end
         end else if (state == PIXEL_SEND) begin
-            if (bus.msReady) begin
+            if (bus.msTaken) begin
                 state <= IDLE;
                 bus.msValid <= 0;
             end
         end else if (state == TRAVERSE_SEND) begin
-            if (bus.msReady) begin
+            if (bus.msTaken) begin
                 state <= TRAVERSE_RECIEVE;
                 bus.msValid <= 0;
-                bus.smReady <= 1;
+                busReceiving <= 1;
             end
         end else if (state == TRAVERSE_RECIEVE) begin
-            if (bus.smValid) begin
+            if (bus.smValid && bus.smTaken) begin
                 if (bus.smData[DATA_WIDTH-1:DATA_WIDTH-MATERIAL_MASK_SIZE] == -1) begin
                     // this is a material
                     state <= MATERIAL_SEND;
 
                     bus.msAddress <= materialAddress +
                         ADDRESS_WIDTH'(bus.smData[MATERIAL_ADDRESS_WIDTH-1:0]);
-                    bus.msWrite <= 0;
-                    bus.msValid <= 1;
                 end else begin
                     // this is a node
                     state <= TRAVERSE_SEND;
@@ -147,24 +149,24 @@ module RayMemory #(
                     
                     bus.msAddress <= treeAddress +
                         ADDRESS_WIDTH'({bus.smData, octantSelect});
-                    bus.msWrite <= 0;
-                    bus.msValid <= 1;
                 end
-
-                bus.smReady <= 0;
+                
+                bus.msWrite <= 0;
+                bus.msValid <= 1;
+                busReceiving <= 0;
             end
         end else if (state == MATERIAL_SEND) begin
-            if (bus.msReady) begin
+            if (bus.msTaken) begin
                 state <= MATERIAL_RECIEVE;
                 bus.msValid <= 0;
-                bus.smReady <= 1;
+                busReceiving <= 1;
             end
         end else if (state == MATERIAL_RECIEVE) begin
-            if (bus.smValid) begin
+            if (bus.smValid && bus.smTaken) begin
                 state <= IDLE;
                 material <= bus.smData;
-                bus.smReady <= 0;
+                busReceiving <= 0;
             end
         end
     end
-endmodule
+endmodule: RayMemory

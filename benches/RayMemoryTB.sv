@@ -5,7 +5,7 @@ module RayMemoryTB #(
     parameter ADDRESS_WIDTH=32,
     
     parameter MASTER_ID_WIDTH=8,
-    parameter MASTER_ID=0,
+    parameter MASTER_ID=5,
     
     parameter MATERIAL_ADDRESS_WIDTH=8
     )(
@@ -27,12 +27,12 @@ module RayMemoryTB #(
     output logic [ADDRESS_WIDTH-1:0] msAddress,
     output logic [DATA_WIDTH-1:0] msData,
     output logic msWrite,
-    input logic msReady,
+    input logic msTaken,
     output logic msValid,
 
     input logic [MASTER_ID_WIDTH-1:0] smID,
     input logic [DATA_WIDTH-1:0] smData,
-    output logic smReady,
+    output logic smTaken,
     input logic smValid
     );
 
@@ -46,12 +46,12 @@ module RayMemoryTB #(
     assign msAddress = bus.msAddress;
     assign msData = bus.msData;
     assign msWrite = bus.msWrite;
-    assign bus.msReady = msReady;
+    assign bus.msTaken = msTaken;
     assign msValid = bus.msValid;
 
     assign bus.smID = smID;
     assign bus.smData = smData;
-    assign smReady = bus.smReady;
+    assign smTaken = bus.smTaken;
     assign bus.smValid = smValid;
 
     RayMemory#(
