@@ -1,9 +1,8 @@
 VFLAGS = -Wall\
 		 -CFLAGS "-std=c++17"\
 		 -Isource\
+		 -Ibenches\
 		 -Mdir verilated
-
-export PKG_CONFIG_PATH=""
 
 stepper:
 	verilator $(VFLAGS)\
@@ -11,6 +10,13 @@ stepper:
 		--exe ../tests/RayStepperTests.cpp ../tests/RayStepper.cpp
 	make -j -C verilated -f VRayStepper.mk VRayStepper
 	./verilated/VRayStepper
+
+memory:
+	verilator $(VFLAGS)\
+		-cc RayMemoryTB.sv\
+		--exe ../tests/RayMemoryTests.cpp
+	make -j -C verilated -f VRayMemoryTB.mk VRayMemoryTB
+	./verilated/VRayMemory
 
 look:
 	verilator $(VFLAGS)\
