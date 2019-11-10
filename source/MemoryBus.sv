@@ -20,7 +20,7 @@ interface MemoryBus #(
     logic [ADDRESS_WIDTH-1:0]   msAddress;
     logic [DATA_WIDTH-1:0]      msData;
     logic                       msWrite;
-    logic                       msReady;
+    logic                       msTaken;
     logic                       msValid;
 
     /*
@@ -28,7 +28,7 @@ interface MemoryBus #(
      */
     logic [MASTER_ID_WIDTH-1:0] smID;
     logic [DATA_WIDTH-1:0]      smData;
-    logic                       smReady;
+    logic                       smTaken;
     logic                       smValid;
 
     modport Master(
@@ -36,12 +36,12 @@ interface MemoryBus #(
         output  msAddress,
         output  msData,
         output  msWrite,
-        input   msReady,
+        input   msTaken,
         output  msValid,
 
         input   smID,
         input   smData,
-        output  smReady,
+        output  smTaken,
         input   smValid
     );
 
@@ -50,12 +50,12 @@ interface MemoryBus #(
         input   msAddress,
         input   msData,
         input   msWrite,
-        output  msReady,
+        output  msTaken,
         input   msValid,
 
         output  smID,
         output  smData,
-        input   smReady,
+        input   smTaken,
         output  smValid
     );
 endinterface: MemoryBus
