@@ -1,6 +1,6 @@
 #include "RayMemory.h"
 
-RayMemory::RayMemory(int timeout) {
+RayMemory::RayMemory(int timeout, int materialAddress, int treeAddress) {
     this->timeout = timeout;
     cycles = 0;
 
@@ -25,6 +25,9 @@ RayMemory::RayMemory(int timeout) {
     dut->flush = 0;
     dut->traverse = 0;
     dut->writePixel = 0;
+
+    dut->materialAddress = materialAddress;
+    dut->treeAddress = treeAddress;
 
     reset();
     flush();

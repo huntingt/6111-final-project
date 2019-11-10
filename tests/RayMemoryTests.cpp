@@ -106,7 +106,7 @@ TEST_CASE("test Memory.h"){
 }
 
 TEST_CASE("test RayMemory operation") {
-    RayMemory dut = RayMemory(124);
+    RayMemory dut = RayMemory(124, 0, 0);
     MemoryArray bram = MemoryArray(0, 1024);
 
     dut.attach(bram);

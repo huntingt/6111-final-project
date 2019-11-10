@@ -15,9 +15,11 @@ class RayMemory {
     /*
      * Make a new RayMemory module. Mostly for testing purposes.
      *
-     * timeout - sets the timeout for transactions
+     * @param timeout sets the timeout for transactions
+     * @param materialAddress address of the materials table in memory
+     * @param treeAddress address of the tree in memory
      */
-    RayMemory(int timeout);
+    RayMemory(int timeout, int materialAddress, int treeAddress);
 
     /*
      * Performs the module reset sequence.
