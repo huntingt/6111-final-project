@@ -14,7 +14,7 @@ stepper:
 memory:
 	verilator $(VFLAGS)\
 		-cc RayMemoryTB.sv\
-		--exe ../tests/RayMemoryTests.cpp
+		--exe ../tests/RayMemoryTests.cpp ../tests/RayMemory.cpp
 	make -j -C verilated -f VRayMemoryTB.mk VRayMemoryTB
 	./verilated/VRayMemoryTB
 

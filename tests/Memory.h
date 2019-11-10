@@ -6,6 +6,7 @@
 #include <vector>
 #include <exception>
 #include <string>
+#include <tuple>
 
 using namespace std;
 
@@ -40,6 +41,7 @@ class MemoryMaster {
     MemoryMaster(MemoryInterface* bus) {
         this->bus = bus;
         *bus->smTaken = false;
+        *bus->msValid = false;
     }
 
     void makeRequest(MemoryRequest request) {
@@ -57,7 +59,7 @@ class MemoryMaster {
 
     void step() {
         // see if a transaction finished
-        if (*bus->smValid && *bus->smTaken) {
+        if (*bus->msValid && *bus->msTaken) {
             requests.pop();
         }
 
@@ -71,7 +73,7 @@ class MemoryMaster {
             *bus->msData = request.data;
             *bus->msValid = true;
         } else {
-            *bus->smValid = false;
+            *bus->msValid = false;
         }
 
         // now check the read channel
@@ -90,17 +92,52 @@ class MemoryMaster {
     MemoryInterface* bus;
 };
 
-typedef optional<MemoryResponse> (* Slave)(MemoryRequest);
-
 class MemorySlave {
     public:
-    MemorySlave(MemoryInterface* bus) {
+    virtual bool claim(int address) = 0;
+    virtual optional<int> step(int address, int data, bool write) = 0;
+};
+
+class MemoryArray : public MemorySlave {
+    public:
+    MemoryArray(int base, int size) {
+        this->base = base;
+        this->size = size;
+        memory.resize(size);
+    }
+
+    bool claim(int address) {
+        int relative = address - base;
+        return relative >= 0 && relative < size;
+    }
+
+    optional<int> step(int address, int data, bool write) {
+        int relative = address - base;
+        
+        if (write) {
+            memory.at(relative) = data;
+        } else {
+            return memory.at(relative);
+        }
+
+        return {};
+    }
+
+    private:
+    int base;
+    int size;
+    vector<int> memory;
+};
+
+class MemorySlaveController {
+    public:
+    MemorySlaveController(MemoryInterface* bus) {
         this->bus = bus;
         *bus->msTaken = false;
         *bus->smValid = false;
     }
     
-    void attach(Slave slave) {
+    void attach(MemorySlave* slave) {
         slaves.push_back(slave);
     }
 
@@ -110,28 +147,19 @@ class MemorySlave {
             MemoryRequest request =
                 {*bus->msID, *bus->msAddress, *bus->msData, *bus->msWrite};
 
-            MemoryResponse response;
             bool taken = false;
-            for (Slave slave : slaves) {
-                auto result = slave(request);
-
-                if (result.has_value()) {
-                    if (taken) {
-                        throw runtime_error("multiple responses to: " +
-                                to_string(request.to));
-                    } else {
-                        taken = true;
-                        response = result.value();
+            for (MemorySlave* slave : slaves) {
+                if (slave->claim(request.to)) {
+                    auto response = slave->step(request.to, request.data, request.write);
+                    
+                    if (response.has_value()) {
+                        responses.push({request.from, response.value()});
                     }
+
+                    taken = true;
                 }
             }
-
-            if (taken) {
-                responses.push(response);
-            } else {
-                throw runtime_error("invalid request to: " +
-                        to_string(request.to));
-            }
+            *bus->msTaken = taken;
         } else {
             *bus->msTaken = false;
         }
@@ -153,7 +181,7 @@ class MemorySlave {
     }
     
     private:
-    vector<Slave> slaves;
+    vector<MemorySlave*> slaves;
     queue<MemoryResponse> responses;
 
     MemoryInterface* bus;
