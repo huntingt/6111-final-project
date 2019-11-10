@@ -7,6 +7,7 @@
 #include <vector>
 #include <optional>
 #include <math.h>
+#include "Memory.h"
 
 using namespace std;
 

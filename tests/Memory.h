@@ -39,7 +39,7 @@ class MemoryMaster {
     public:
     MemoryMaster(MemoryInterface* bus) {
         this->bus = bus;
-        bus->smTaken 
+        *bus->smTaken = false;
     }
 
     void makeRequest(MemoryRequest request) {
@@ -50,14 +50,14 @@ class MemoryMaster {
         if (responses.size() == 0) return {};
 
         auto response = responses.front();
-        ressponses.pop();
+        responses.pop();
 
         return response;
     }
 
     void step() {
         // see if a transaction finished
-        if (bus->smValid && bus->smTaken) {
+        if (*bus->smValid && *bus->smTaken) {
             requests.pop();
         }
 
@@ -65,21 +65,21 @@ class MemoryMaster {
         if (requests.size() > 0) {
             auto request = requests.front();
 
-            bus->msID = request.from;
-            bus->msAddress = request.to;
-            bus->msWrite = request.write;
-            bus->msData = request.data;
-            bus->msValid = true;
+            *bus->msID = request.from;
+            *bus->msAddress = request.to;
+            *bus->msWrite = request.write;
+            *bus->msData = request.data;
+            *bus->msValid = true;
         } else {
-            bus->smValid = false;
+            *bus->smValid = false;
         }
 
         // now check the read channel
-        if (bus->smValid) {
-            bus->smTaken = true;
-            queue.push({bus->smID, bus->smData});
+        if (*bus->smValid) {
+            *bus->smTaken = true;
+            responses.push({*bus->smID, *bus->smData});
         } else {
-            bus->smTaken = false;
+            *bus->smTaken = false;
         }
     }
 
@@ -96,8 +96,8 @@ class MemorySlave {
     public:
     MemorySlave(MemoryInterface* bus) {
         this->bus = bus;
-        bus->msTaken = false;
-        bus->smValid = false;
+        *bus->msTaken = false;
+        *bus->smValid = false;
     }
     
     void attach(Slave slave) {
@@ -106,9 +106,9 @@ class MemorySlave {
 
     void step() {
         // handle requests
-        if (bus->msValid) {
+        if (*bus->msValid) {
             MemoryRequest request =
-                {bus->msID, bus->msAddress, bus->msData, bus->msWrite};
+                {*bus->msID, *bus->msAddress, *bus->msData, *bus->msWrite};
 
             MemoryResponse response;
             bool taken = false;
@@ -133,22 +133,22 @@ class MemorySlave {
                         to_string(request.to));
             }
         } else {
-            bus->msTaken = false;
+            *bus->msTaken = false;
         }
 
         // handle sending responses
-        if (bus->smValid && bus->smTaken) {
+        if (*bus->smValid && *bus->smTaken) {
             responses.pop();
         }
 
         if (responses.size() > 0) {
             auto response = responses.front();
 
-            bus->smID = response.from;
-            bus->smData = response.data;
-            bus->smValid = true;
+            *bus->smID = response.from;
+            *bus->smData = response.data;
+            *bus->smValid = true;
         } else {
-            bus->smValid = false;
+            *bus->smValid = false;
         }
     }
     
