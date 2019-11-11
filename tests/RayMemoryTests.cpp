@@ -145,4 +145,14 @@ TEST_CASE("test RayMemory operation") {
         REQUIRE( depth == 1 );
         REQUIRE( material == 0 );
     }
+    SECTION("test nozero material") {
+        auto [depth, material] = dut.traverse({40000, 0, 40000});
+        REQUIRE( depth == 1 );
+        REQUIRE( material == 5 );
+    }
+    SECTION("test double node traversal"){
+        auto [depth, material] = dut.traverse({31000, 0, 33000});
+        REQUIRE( depth == 2 );
+        REQUIRE( material == 0x11 );
+    }
 }
