@@ -167,7 +167,7 @@ module RayMemory #(
             end
         end
 
-        if (1) begin
+        if (0) begin
             $display("state: %d, msValid: %d, msTaken: %d, msAddress: %d, msData: %d, smValid: %d, smTaken: %d, smData: %d",
                 state, bus.msValid, bus.msTaken, bus.msAddress, bus.msData, bus.smValid, bus.smTaken, bus.smData);
         end

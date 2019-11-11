@@ -21,8 +21,8 @@ int main(int argc, char** argv) {
  
     return result;
 }
-/*
-TEST_CASE("test Memory.h"){
+
+TEST_CASE("test Memory.h with 0 latency memory"){
     int msID;
     int msAddress;
     int msData;
@@ -52,22 +52,26 @@ TEST_CASE("test Memory.h"){
     MemoryMaster master = MemoryMaster(&interface);
     MemorySlaveController controller = MemorySlaveController(&interface);
 
-    MemoryArray bram = MemoryArray(0, 1024);
+    MemoryArray bram = MemoryArray(0, 1024, 0);
     controller.attach(&bram);
 
     SECTION("test simple read") {
         master.makeRequest({0, 0, 0, 0});
 
         // send to controller
-        master.step();
-        controller.step();
+        master.step1();
+        controller.step1();
+        master.step2();
+        controller.step2();
 
         // no request yet
         REQUIRE( !master.readResponse().has_value() );
 
         // send back master
-        master.step();
-        controller.step();
+        master.step1();
+        controller.step1();
+        master.step2();
+        controller.step2();
         
         // expect request
         auto response = master.readResponse();
@@ -81,20 +85,26 @@ TEST_CASE("test Memory.h"){
         master.makeRequest({10, 50, 23, 1});
         master.makeRequest({11, 50, 0, 0});
 
-        master.step();
-        controller.step();
+        master.step1();
+        controller.step1();
+        master.step2();
+        controller.step2();
 
         // no request yet
         REQUIRE( !master.readResponse().has_value() );
 
-        master.step();
-        controller.step();
+        master.step1();
+        controller.step1();
+        master.step2();
+        controller.step2();
         
         // still no request yet (write has no response)
         REQUIRE( !master.readResponse().has_value() );
         
-        master.step();
-        controller.step();
+        master.step1();
+        controller.step1();
+        master.step2();
+        controller.step2();
         
         // expect request
         auto response = master.readResponse();
@@ -104,7 +114,7 @@ TEST_CASE("test Memory.h"){
         REQUIRE( value.data == 23 );
     }
 }
-*/
+
 TEST_CASE("test RayMemory operation") {
     RayMemory dut = RayMemory(124, 0, 1024);
     

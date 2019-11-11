@@ -59,12 +59,7 @@ class MemoryMaster {
         return response;
     }
 
-    void step() {
-        // see if a transaction finished
-        if (*bus->msValid && *bus->msTaken) {
-            requests.pop();
-        }
-
+    void step1() {
         // put next request on bus
         if (requests.size() > 0) {
             auto request = requests.front();
@@ -84,6 +79,13 @@ class MemoryMaster {
             responses.push({*bus->smID, *bus->smData});
         } else {
             *bus->smTaken = false;
+        }
+    }
+
+    void step2() {
+        // see if a transaction finished
+        if (*bus->msValid && *bus->msTaken) {
+            requests.pop();
         }
     }
 
@@ -220,13 +222,10 @@ class MemorySlaveController {
         } else {
             *bus->smValid = false;
         }
-
-        printf("s1 valid: %i, taken: %i\n", *bus->smValid, *bus->smTaken);
     }
 
     void step2() {
         // attempt to finish transaction
-        printf("s2 valid: %i, taken: %i\n", *bus->smValid, *bus->smTaken);
         if (*bus->smValid && *bus->smTaken) {
             responses.erase(responses.begin() + currentResponse);
             currentResponse = -1;
