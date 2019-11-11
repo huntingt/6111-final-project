@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
  
     return result;
 }
-
+/*
 TEST_CASE("test Memory.h"){
     int msID;
     int msAddress;
@@ -104,7 +104,7 @@ TEST_CASE("test Memory.h"){
         REQUIRE( value.data == 23 );
     }
 }
-
+*/
 TEST_CASE("test RayMemory operation") {
     RayMemory dut = RayMemory(124, 0, 1024);
     
@@ -128,7 +128,11 @@ TEST_CASE("test RayMemory operation") {
     
     SECTION("write a pixel to the frame") {
         dut.writePixel(512, 0x123456);
-
         REQUIRE( frame.read(0) == 0x123456 );
+    }
+    SECTION("get the material of zero vector") {
+        auto [depth, material] = dut.traverse({0, 0, 0});
+        REQUIRE( depth == 1 );
+        REQUIRE( material == 0 );
     }
 }

@@ -76,6 +76,9 @@ module RayMemory #(
 
     // set whether bus is currently receiving
     logic busReceiving;
+    logic busReceived;
+    logic busSending;
+    logic busSent;
 
     always_comb begin
         ready = state == IDLE;
@@ -90,7 +93,21 @@ module RayMemory #(
             position[0][POSITION_WIDTH - depth - 1]
         };
 
-        bus.smTaken = busReceiving && bus.smID == MASTER_ID;
+        busReceiving =
+               state == TRAVERSE_RECIEVE
+            || state == MATERIAL_RECIEVE;
+        bus.smTaken =
+               busReceiving
+            && (bus.smID == MASTER_ID)
+            && bus.smValid;
+        busReceived = bus.smTaken && bus.smValid;
+
+        busSending =
+               state == TRAVERSE_SEND
+            || state == MATERIAL_SEND
+            || state == PIXEL_SEND;
+        bus.msValid = busSending;
+        busSent = bus.msTaken && bus.msValid;
     end
 
     always_ff @(posedge clock) begin
@@ -100,18 +117,12 @@ module RayMemory #(
 
         if (reset) begin
             state <= IDLE;
-            depth <= 0;
-            
-            // turn off bus
-            busReceiving <= 0;
-            bus.msValid <= 0;
         end else if (state == IDLE) begin
             if (writePixel) begin
                 state <= PIXEL_SEND;
 
                 bus.msData <= DATA_WIDTH'(pixel);
                 bus.msAddress <= pixelAddress;
-                bus.msValid <= 1;
                 bus.msWrite <= 1;
             end else if (traverse) begin
                 state <= TRAVERSE_SEND;
@@ -119,54 +130,46 @@ module RayMemory #(
                 depth <= 1;
                 
                 bus.msAddress <= treeAddress + ADDRESS_WIDTH'(octantSelect);
-                bus.msValid <= 1;
                 bus.msWrite <= 0;
             end
         end else if (state == PIXEL_SEND) begin
-            if (bus.msTaken) begin
+            if (busSent) begin
                 state <= IDLE;
-                bus.msValid <= 0;
             end
         end else if (state == TRAVERSE_SEND) begin
-            if (bus.msTaken) begin
+            if (busSent) begin
                 state <= TRAVERSE_RECIEVE;
-                bus.msValid <= 0;
-                busReceiving <= 1;
             end
         end else if (state == TRAVERSE_RECIEVE) begin
-            if (bus.smValid && bus.smTaken) begin
-                if (bus.smData[DATA_WIDTH-1:DATA_WIDTH-MATERIAL_MASK_SIZE] == -1) begin
+            if (busReceived) begin
+                if (bus.smData[DATA_WIDTH-1:DATA_WIDTH-MATERIAL_MASK_SIZE] == '1) begin
                     // this is a material
                     state <= MATERIAL_SEND;
-
                     bus.msAddress <= materialAddress +
                         ADDRESS_WIDTH'(bus.smData[MATERIAL_ADDRESS_WIDTH-1:0]);
                 end else begin
                     // this is a node
                     state <= TRAVERSE_SEND;
-                    
-                    depth <= depth + 1;
-                    
                     bus.msAddress <= treeAddress +
                         ADDRESS_WIDTH'({bus.smData, octantSelect});
+                    
+                    depth <= depth + 1;
                 end
-                
-                bus.msWrite <= 0;
-                bus.msValid <= 1;
-                busReceiving <= 0;
             end
         end else if (state == MATERIAL_SEND) begin
-            if (bus.msTaken) begin
+            if (busSent) begin
                 state <= MATERIAL_RECIEVE;
-                bus.msValid <= 0;
-                busReceiving <= 1;
             end
         end else if (state == MATERIAL_RECIEVE) begin
-            if (bus.smValid && bus.smTaken) begin
+            if (busReceived) begin
                 state <= IDLE;
                 material <= bus.smData;
-                busReceiving <= 0;
             end
+        end
+
+        if (1) begin
+            $display("state: %d, msValid: %d, msTaken: %d, msAddress: %d, msData: %d, smValid: %d, smTaken: %d, smData: %d",
+                state, bus.msValid, bus.msTaken, bus.msAddress, bus.msData, bus.smValid, bus.smTaken, bus.smData);
         end
     end
 endmodule: RayMemory

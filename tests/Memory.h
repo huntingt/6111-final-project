@@ -97,14 +97,15 @@ class MemoryMaster {
 class MemorySlave {
     public:
     virtual bool claim(int address) = 0;
-    virtual optional<int> step(int address, int data, bool write) = 0;
+    virtual optional<tuple<int, int>> step(int address, int data, bool write) = 0;
 };
 
 class MemoryArray : public MemorySlave {
     public:
-    MemoryArray(int base, int size) {
+    MemoryArray(int base, int size, int latency=1) {
         this->base = base;
         this->size = size;
+        this->latency = latency;
         memory.resize(size);
     }
 
@@ -113,13 +114,13 @@ class MemoryArray : public MemorySlave {
         return relative >= 0 && relative < size;
     }
 
-    optional<int> step(int address, int data, bool write) {
+    optional<tuple<int, int>> step(int address, int data, bool write) {
         int relative = address - base;
         
         if (write) {
             memory.at(relative) = data;
         } else {
-            return memory.at(relative);
+            return tuple<int, int>(latency, memory.at(relative));
         }
 
         return {};
@@ -154,6 +155,7 @@ class MemoryArray : public MemorySlave {
     private:
     int base;
     int size;
+    int latency;
     vector<int> memory;
 };
 
@@ -163,13 +165,14 @@ class MemorySlaveController {
         this->bus = bus;
         *bus->msTaken = false;
         *bus->smValid = false;
+        currentResponse = -1;
     }
     
     void attach(MemorySlave* slave) {
         slaves.push_back(slave);
     }
 
-    void step() {
+    void step1() {
         // handle requests
         if (*bus->msValid) {
             MemoryRequest request =
@@ -178,10 +181,12 @@ class MemorySlaveController {
             bool taken = false;
             for (MemorySlave* slave : slaves) {
                 if (slave->claim(request.to)) {
-                    auto response = slave->step(request.to, request.data, request.write);
+                    auto result = slave->step(request.to, request.data, request.write);
                     
-                    if (response.has_value()) {
-                        responses.push({request.from, response.value()});
+                    if (result.has_value()) {
+                        auto [latency, response] = result.value();
+
+                        responses.push_back({latency, {request.from, response}});
                     }
 
                     taken = true;
@@ -191,14 +196,23 @@ class MemorySlaveController {
         } else {
             *bus->msTaken = false;
         }
+   
+        // decrement latency counter on each response
+        for (int i = 0; i < responses.size(); i++) {
+            auto [latency, response] = responses.at(i);
+            
+            if (currentResponse == -1 && latency == 0) {
+                currentResponse = i;
+            }
 
-        // handle sending responses
-        if (*bus->smValid && *bus->smTaken) {
-            responses.pop();
+            if (latency > 0) {
+                responses.at(i) = {latency - 1, response};
+            }
         }
 
-        if (responses.size() > 0) {
-            auto response = responses.front();
+        // start transaction on slave
+        if (currentResponse >= 0) {
+            auto [latency, response] = responses.at(currentResponse);
 
             *bus->smID = response.from;
             *bus->smData = response.data;
@@ -206,11 +220,23 @@ class MemorySlaveController {
         } else {
             *bus->smValid = false;
         }
+
+        printf("s1 valid: %i, taken: %i\n", *bus->smValid, *bus->smTaken);
+    }
+
+    void step2() {
+        // attempt to finish transaction
+        printf("s2 valid: %i, taken: %i\n", *bus->smValid, *bus->smTaken);
+        if (*bus->smValid && *bus->smTaken) {
+            responses.erase(responses.begin() + currentResponse);
+            currentResponse = -1;
+        }
     }
     
     private:
     vector<MemorySlave*> slaves;
-    queue<MemoryResponse> responses;
+    vector<tuple<int, MemoryResponse>> responses;
+    int currentResponse;
 
     MemoryInterface* bus;
 };

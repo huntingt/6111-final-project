@@ -46,8 +46,13 @@ void RayMemory::attach(MemorySlave* slave) {
 void RayMemory::step() {
     dut->clock = 0;
     dut->eval();
+     
     dut->clock = 1;
     dut->eval();
+
+    controller->step1();
+    dut->eval();
+    controller->step2();
 }
 
 void RayMemory::flush() {
