@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
 }
 
 TEST_CASE("test RayUnit operation") {
-    const int timeout = 256;
+    const int timeout = 128;
     const int pixelAddress = 4096;
     const int materialAddress = 0;
     const int treeAddress = 256;
@@ -42,12 +42,14 @@ TEST_CASE("test RayUnit operation") {
     tree.loadFile("tests/cube.oc");
 
     MemoryArray frame = MemoryArray(pixelAddress, 512);
-
+    
     dut.attach(&tree);
     dut.attach(&material);
     dut.attach(&frame);
     
-    dut.setRender(materialAddress, pixelAddress);
+    dut.setRender(materialAddress, treeAddress);
+
+    REQUIRE( tree.read(0) == 0xFFFF00 );
 
     SECTION("Test straight") {
         vector<int> q = {0, 0, 0};

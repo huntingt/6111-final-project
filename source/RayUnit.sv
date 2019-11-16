@@ -76,10 +76,10 @@ module RayUnit #(
 
     always_comb begin
         // find l and u
-        mask = (1 << POSITION_WIDTH - depth) - 1;
+        mask = (1 << (POSITION_WIDTH - depth)) - 1;
         for (int i = 0; i < 3; i++) begin
-            l[i] = q[i] & mask;
-            u[i] = q[i] | ~mask;
+            l[i] = q[i] & ~mask;
+            u[i] = q[i] | mask;
         end
 
         write = state == WRITE;
@@ -94,6 +94,11 @@ module RayUnit #(
     end
 
     always_ff @(posedge clock) begin
+        if (0) begin
+            $display("state: %d, traverse: %d, tReady: %d, x: %d, y: %d, z: %d", state, traverse, traverseReady, q[0], q[1], q[2]);
+            $display("mask: %b, x: [%d, %d], y: [%d, %d], z: [%d, %d]", mask, l[0], u[0], l[1], u[1], l[2], u[2]);
+        end
+
         if (reset) begin
             state <= IDLE;
         end else if (state == IDLE) begin
