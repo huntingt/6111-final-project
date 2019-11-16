@@ -87,11 +87,17 @@ module RayMemory #(
         // selecting the bits at depth, then packing them
         // into a value that will be used to select the octant
         // in each octree node
-        octantSelect = {
-            position[2][POSITION_WIDTH - depth - 1],
-            position[1][POSITION_WIDTH - depth - 1],
-            position[0][POSITION_WIDTH - depth - 1]
-        };
+        octantSelect = state == IDLE ? 
+            {
+                position[2][POSITION_WIDTH - 1],
+                position[1][POSITION_WIDTH - 1],
+                position[0][POSITION_WIDTH - 1]
+            } :
+            {
+                position[2][POSITION_WIDTH - depth - 1],
+                position[1][POSITION_WIDTH - depth - 1],
+                position[0][POSITION_WIDTH - depth - 1]
+            };
 
         busReceiving =
                state == TRAVERSE_RECIEVE
@@ -168,8 +174,12 @@ module RayMemory #(
         end
 
         if (0) begin
-            $display("state: %d, msValid: %d, msTaken: %d, msAddress: %d, msData: %d, smValid: %d, smTaken: %d, smData: %d",
+            $display("state: %d, msValid: %d, msTaken: %d, msAddress: %d, msData: %d, smValid: %d, smTaken: %d, smData: %h",
                 state, bus.msValid, bus.msTaken, bus.msAddress, bus.msData, bus.smValid, bus.smTaken, bus.smData);
+        end
+        if (0) begin
+            $display("octant: %b, depth: %d, position: {%d, %d, %d}",
+                octantSelect, depth, position[0], position[1], position[2]);
         end
     end
 endmodule: RayMemory

@@ -71,6 +71,7 @@ module RayUnit #(
     logic outOfBounds;
 
     logic [DATA_WIDTH-1:0] material;
+    logic [DATA_WIDTH-1:0] pixel;
 
     logic [ADDRESS_WIDTH-1:0] pixelAddressF;
 
@@ -89,6 +90,9 @@ module RayUnit #(
         // so that these can be decoupled later
         writeReady = memoryReady;
         traverseReady = memoryReady & !write;
+
+        //TODO: is this stable?
+        pixel = outOfBounds ? 0 : material;
 
         busy = state != IDLE;
     end
@@ -176,7 +180,7 @@ module RayUnit #(
         .depth(depth),
         .material(material),
         .writePixel(write),
-        .pixel(material),
+        .pixel(pixel),
         .pixelAddress(pixelAddressF),
         .ready(memoryReady),
         .bus(bus));

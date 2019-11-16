@@ -26,7 +26,7 @@ int main() {
     }
 
     MemoryArray tree = MemoryArray(treeAddress, 1024);
-    tree.loadFile("tests/diagonal.oc");
+    tree.loadFile("tests/cube.oc");
 
     MemoryArray frame = MemoryArray(pixelAddress, 512);
     
@@ -36,10 +36,10 @@ int main() {
     
     dut.setRender(materialAddress, treeAddress);
 
-    const vector<int> camera_q = {40000, 40000, 0};
+    const vector<int> camera_q = {32000, 32000, 0};
     const vector<int> camera_v = {0, 0, 400};
-    const vector<int> xstep = {1, 0, 0};
-    const vector<int> ystep = {0, 1, 0};
+    const vector<int> xstep = {2, 0, 0};
+    const vector<int> ystep = {0, 2, 0};
 
     for(int i = 0; i < image.rows; i++){
         for(int j = 0; j < image.cols; j++){
