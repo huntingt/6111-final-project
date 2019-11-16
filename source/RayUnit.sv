@@ -36,7 +36,7 @@ module RayUnit #(
     input logic [ADDRESS_WIDTH-1:0] materialAddress,
     input logic [ADDRESS_WIDTH-1:0] treeAddress,
     
-    MemoryBus.master bus
+    MemoryBus.Master bus
     );
     enum logic[2:0] {
         IDLE,
@@ -54,7 +54,7 @@ module RayUnit #(
     logic [POSITION_WIDTH-1:0] l [2:0];
     logic [POSITION_WIDTH-1:0] u [2:0];
 
-    logic [POSITION_WIDTH-1:0] mask [2:0];
+    logic [POSITION_WIDTH-1:0] mask;
 
     logic [3:0] depth;
 
@@ -82,13 +82,13 @@ module RayUnit #(
             u[i] = q[i] | ~mask;
         end
 
-        // so that these can be decoupled later
-        writeReady = memoryReady;
-        traverseReady = memoryReady & !write;
-
         write = state == WRITE;
         step = state == STEP_START;
         traverse = state == TRAVERSE_START;
+        
+        // so that these can be decoupled later
+        writeReady = memoryReady;
+        traverseReady = memoryReady & !write;
 
         busy = state != IDLE;
     end
@@ -101,9 +101,9 @@ module RayUnit #(
                 state <= TRAVERSE_START;
                 
                 pixelAddressF <= pixelAddress;
-                for (int i = 0; i < 3 i++) begin
+                for (int i = 0; i < 3; i++) begin
                     q[i] <= rayQ[i];
-                    b[i] <= rayV[i];
+                    v[i] <= rayV[i];
                 end
             end
         end else if (state == TRAVERSE_START) begin
@@ -127,12 +127,14 @@ module RayUnit #(
                 if (outOfBounds) begin
                     state <= WRITE;
                 end else begin
-                    state <= 
+                    state <= TRAVERSE_START;
                     q <= qp;
                 end
             end
         end else if (state == WRITE) begin
-            state <= IDLE;
+            if (writeReady) begin
+                state <= IDLE;
+            end
         end
     end
 

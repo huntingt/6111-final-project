@@ -2,7 +2,8 @@ module RayUnitTB #(
     parameter POSITION_WIDTH=16,
     parameter DATA_WIDTH=24,
     parameter ADDRESS_WIDTH=32,
-    parameter MASTER_ID=5
+    parameter MASTER_ID=5,
+    parameter MASTER_ID_WIDTH=8
     )(
     input clock,
     input reset,
@@ -35,7 +36,7 @@ module RayUnitTB #(
     MemoryBus#(
         .DATA_WIDTH(DATA_WIDTH),
         .ADDRESS_WIDTH(ADDRESS_WIDTH),
-        .MASTER_ID_WIDTH(0)
+        .MASTER_ID_WIDTH(MASTER_ID_WIDTH)
     ) bus;
 
     assign msID = bus.msID;

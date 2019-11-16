@@ -6,20 +6,13 @@
 #include <vector>
 #include <exception>
 #include "Memory.h"
-#include "VRayMemoryTB.h"
+#include "VRayUnitTB.h"
 
 using namespace std;
 
-class RayMemory {
+class RayUnit {
     public:
-    /*
-     * Make a new RayMemory module. Mostly for testing purposes.
-     *
-     * @param timeout sets the timeout for transactions
-     * @param materialAddress address of the materials table in memory
-     * @param treeAddress address of the tree in memory
-     */
-    RayMemory(int timeout, int materialAddress, int treeAddress);
+    RayUnit(int timeout);
 
     /*
      * Performs the module reset sequence.
@@ -27,7 +20,9 @@ class RayMemory {
     void reset();
 
     /*
-     * Attach a new memory slave to the slave memory controller.
+     * Attach a new memory slave.
+     *
+     * @param slave slave to attach
      */
     void attach(MemorySlave* slave);
     
@@ -43,34 +38,27 @@ class RayMemory {
     void flush();
 
     /*
-     * Perform a traverse operation with the given timeout. If it fails
-     * then a runtime_exception will be thrown.
-     *
-     * @param position position to traverse the octree at
-     * @return {depth, material} at 'position' in the octree
+     * Setup the rendering address locations.
      */
-    tuple<int, int> traverse(vector<int> position);
-    
+    void setRender(int materialAddress, int treeAddress);
+
     /*
-     * Writes a pixel into memory with the specified timeout.
-     *
-     * @param pixelAddress address to save pixel to
-     * @param pixel pixel to save
+     * Carry out a single render operation.
      */
-    void writePixel(int pixelAddress, int pixel);
+    void render(vector<int> position, vector<int> direction, int address);
 
     /*
      * Number of cycles the module has completed since instantiation.
      */
     long getCycles();
 
-    ~RayMemory();
+    ~RayUnit();
 
     private:
     int timeout;
     long cycles;
 
-    VRayMemoryTB* dut;
+    VRayUnitTB* dut;
 
     MemoryInterface interface;
     MemorySlaveController* controller;

@@ -66,7 +66,7 @@ void RayUnit::render(vector<int> position, vector<int> direction, int address) {
 
     dut->rayV[0] = direction.at(0);
     dut->rayV[1] = direction.at(1);
-    dut->rayV[2] = direction.ad(2);
+    dut->rayV[2] = direction.at(2);
 
     dut->pixelAddress = address;
 
@@ -74,8 +74,8 @@ void RayUnit::render(vector<int> position, vector<int> direction, int address) {
     step();
     dut->start = 0;
 
-    for(int step = 0; step < timeout; step++) {
-        if (dut->!busy) return;
+    for(int i = 0; i < timeout; i++) {
+        if (!dut->busy) return;
         step();
     }
 
