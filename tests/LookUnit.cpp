@@ -36,11 +36,14 @@ int main() {
     
     dut.setRender(materialAddress, treeAddress);
 
-    const vector<int> camera_q = {32000, 32000, 0};
-    const vector<int> camera_v = {0, 0, 400};
-    const vector<int> xstep = {2, 0, 0};
-    const vector<int> ystep = {0, 2, 0};
+    const double right = -60;
+    const double down = 35;
 
+    const vector<int> camera_q = Ray(60000, 58000, 0).vec();
+    const vector<int> camera_v = Ray(0, 0, 400000).rotx(down).roty(right).vec();
+    const vector<int> xstep = Ray(1000, 0, 0).rotx(down).roty(right).vec();
+    const vector<int> ystep = Ray(0, 1000, 0).rotx(down).roty(right).vec();
+    
     for(int i = 0; i < image.rows; i++){
         for(int j = 0; j < image.cols; j++){
             // generate the appropriate vector
