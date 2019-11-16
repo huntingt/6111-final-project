@@ -34,6 +34,15 @@ look:
 	make -j -C verilated -f VRayStepper.mk VRayStepper
 	./verilated/VRayStepper
 
+lunit:
+	verilator $(VFLAGS)\
+		-CFLAGS "$(shell pkg-config --cflags opencv)"\
+		-LDFLAGS "$(shell pkg-config --libs opencv)"\
+		-cc RayUnitTB.sv\
+		--exe ../tests/LookUnit.cpp ../tests/RayUnit.cpp ../tests/Memory.cpp
+	make -j -C verilated -f VRayUnitTB.mk VRayUnitTB
+	./verilated/VRayUnitTB
+
 simple:
 	verilator $(VFLAGS)\
 		-cc Simple.sv\

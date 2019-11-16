@@ -46,6 +46,8 @@ void RayUnit::step() {
     controller->step1();
     dut->eval();
     controller->step2();
+
+    cycles += 1;
 }
 
 void RayUnit::flush() {
