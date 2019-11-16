@@ -11,7 +11,7 @@ using namespace std;
 int main() {
     Mat image = Mat(500, 500, CV_8U);
 
-    const int timeout = 256;
+    const int timeout = 512;
     const int pixelAddress = 4096;
     const int materialAddress = 0;
     const int treeAddress = 256;
@@ -19,13 +19,13 @@ int main() {
     RayUnit dut = RayUnit(timeout);
     
     // Maps material index to greyscale color
-    MemoryArray material = MemoryArray(materialAddress, 256);
+    MemoryArray material = MemoryArray(materialAddress, 256, 5);
     for (int i = 0; i < 256; i++) {
         int color = i + (i << 8) + (i << 16);
         material.write(i, color);
     }
 
-    MemoryArray tree = MemoryArray(treeAddress, 1024);
+    MemoryArray tree = MemoryArray(treeAddress, 1024, 5);
     tree.loadFile("tests/cube.oc");
 
     MemoryArray frame = MemoryArray(pixelAddress, 512);
