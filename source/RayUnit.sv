@@ -19,6 +19,7 @@ module RayUnit #(
     // know when the system is finished with a frame.
     input logic start,
     output logic busy,
+    output logic ready,
 
     // incoming ray position and direction
     // the ray position is garunteed to remain stable
@@ -95,6 +96,7 @@ module RayUnit #(
         pixel = outOfBounds ? 0 : material;
 
         busy = state != IDLE;
+        ready = !busy;
     end
 
     always_ff @(posedge clock) begin

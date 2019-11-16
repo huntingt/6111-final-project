@@ -55,7 +55,7 @@ TEST_CASE("test RayUnit operation") {
         
         dut.render(q, v, pixelAddress + 0);
 
-        REQUIRE( frame.read(0) == 0xFFFFFF );
+        REQUIRE( frame.read(0) == 0x1f1f1f );
     }
 }
 

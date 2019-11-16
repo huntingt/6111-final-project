@@ -11,7 +11,8 @@ module RayUnitTB #(
     
     input logic start,
     output logic busy,
-    
+    output logic ready,
+
     input logic [POSITION_WIDTH-1:0] rayQ [2:0],
     input logic [POSITION_WIDTH-1:0] rayV [2:0],
 
@@ -62,6 +63,7 @@ module RayUnitTB #(
         .flush(flush),
         .start(start),
         .busy(busy),
+        .ready(ready),
         .rayQ(rayQ),
         .rayV(rayV),
         .pixelAddress(pixelAddress),
