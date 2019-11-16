@@ -31,11 +31,11 @@ TEST_CASE("test RayUnit operation") {
 
     RayUnit dut = RayUnit(timeout);
     
-    // material map gives the material index as its
-    // properety
+    // Maps material index to greyscale color
     MemoryArray material = MemoryArray(materialAddress, 256);
     for (int i = 0; i < 256; i++) {
-        material.write(i, i);
+        int color = i + (i << 8) + (i << 16);
+        material.write(i, color);
     }
 
     MemoryArray tree = MemoryArray(treeAddress, 1024);
@@ -49,11 +49,9 @@ TEST_CASE("test RayUnit operation") {
     
     dut.setRender(materialAddress, treeAddress);
 
-    REQUIRE( tree.read(0) == 0xFFFF00 );
-
     SECTION("Test straight") {
         vector<int> q = {0, 0, 0};
-        vector<int> v = Ray::normalize({1, 1, 0}, 16);
+        vector<int> v = Ray::normalize({1, 1, 1}, 16);
         
         dut.render(q, v, pixelAddress + 0);
 
