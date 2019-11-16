@@ -18,6 +18,13 @@ memory:
 	make -j -C verilated -f VRayMemoryTB.mk VRayMemoryTB
 	./verilated/VRayMemoryTB
 
+unit:
+	verilator $(VFLAGS)\
+		-cc RayUnitTB.sv\
+		--exe ../tests/RayUnitTests.cpp ../tests/RayUnit.cpp ../tests/Memory.cpp
+	make -j -C verilated -f VRayUnitTB.mk VRayUnitTB
+	./verilated/VRayUnitTB
+
 look:
 	verilator $(VFLAGS)\
 		-CFLAGS "$(shell pkg-config --cflags opencv)"\

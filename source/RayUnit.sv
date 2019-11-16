@@ -89,6 +89,8 @@ module RayUnit #(
         write = state == WRITE;
         step = state == STEP_START;
         traverse = state == TRAVERSE_START;
+
+        busy = state != IDLE;
     end
 
     always_ff @(posedge clock) begin
