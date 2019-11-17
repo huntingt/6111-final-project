@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
  
     return result;
 }
-/*
+
 TEST_CASE("test RayGenerator startup") {
     RayGenerator dut = RayGenerator();
     
@@ -55,15 +55,15 @@ TEST_CASE("test RayGenerator startup") {
         REQUIRE( address2 == 8 );
     }
 }
-*/
+
 TEST_CASE("test all rays in an image") {
     RayGenerator dut = RayGenerator();
     
     const double right = -60;
     const double down = 35;
-    Ray cameraV = Ray(0, 0, 10000).rotx(down).roty(right);
-    Ray cameraX = Ray(250, 0, 0).rotx(down).roty(right);
-    Ray cameraY = Ray(0, 250, 0).rotx(down).roty(right);
+    Ray cameraV = Ray(0, 0, 8000).rotx(down).roty(right);
+    Ray cameraX = Ray(200, 0, 0).rotx(down).roty(right);
+    Ray cameraY = Ray(0, 200, 0).rotx(down).roty(right);
 
     dut.setCamera(cameraV, cameraX, cameraY);
     dut.setFrame(500, 500, 0);
@@ -73,10 +73,9 @@ TEST_CASE("test all rays in an image") {
         auto [address, ray] = dut.getRay();
         auto norm = ray.norm();
         
-        REQUIRE( norm > 1.7*(1<<15) );
-        REQUIRE( norm < (1<<16) );
+        REQUIRE( norm > 0.7*(1<<16) );
     }
-    /*
+    
     SECTION("check for right number and size") {
         for (int i = 0; i < 500*500; i++) {
             auto [address, ray] = dut.getRay();
@@ -84,11 +83,10 @@ TEST_CASE("test all rays in an image") {
 
             REQUIRE( address == i );
 
-            REQUIRE( norm > 1.7*(1<<15) );
-            REQUIRE( norm < (1<<16) );
+            REQUIRE( norm > 1.7*(1<<14) );
         }
 
         REQUIRE( !dut.busy() );
     }
-    */
+    
 }

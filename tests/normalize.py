@@ -1,30 +1,51 @@
 import numpy as np
 from math import log
+import matplotlib.pyplot as plt
 
 def norm(l):
     x2 = [x*x for x in l]
     return sum(x2)
 
-def invsqrt(l):
-    return 1/(norm(l))**0.5
+def invsqrt(n):
+    return 1/(n)**0.5
+
+def sainvsqrt(n):
+    bits = 16
+    toShift = bits - int(log(n,2))
+    y = 1 << (toShift//2)
+
+    for i in range(5):
+        # three in fixed point
+        three = 3<<bits
+
+        # convert back to f16 for y
+        y = y * (three - ((n*y)*y)) >> bits + 1
+    
+    return y
 
 def ainvsqrt(n):
     bits = 16
     toShift = bits - int(log(n,2))
-    y = 1 << (toShift//2)
-    print(f"y guess: {y}")
+    y = 1 << bits + (toShift//2)
 
     for i in range(2):
         # three in fixed point
         three = 3<<bits
 
         # convert back to f16 for y
-        y = y * (three - ((n*y)*y)) >> bits + 1
-        
-    return y
+        y = y * (three - ((n*y>>bits)*y>>bits)) >> bits + 1
+    
+    return y/2.**16
 
-for x in range(8):
-    v = np.array([-250, 250, 400])*2**(x/2)
-    i = int(norm(v))
-    print(f"num: {ainvsqrt(i>>16)}")
-    print(f"i: {i**0.5/2**16}, approx/norm: {(ainvsqrt(i>>16)*7//8)/(invsqrt(v/2**16))}")
+@np.vectorize
+def ratio(n):
+    x = int(n**2)
+    approx = sainvsqrt(x>>16)*15//16
+    true = invsqrt(x)*2**16
+    return approx / true
+
+ns = np.linspace(256, 10000, num=1000)
+plt.plot(ns, ratio(ns))
+plt.plot(ns, [1]*len(ns))
+plt.plot(ns, [0.87]*len(ns))
+plt.show()

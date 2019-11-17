@@ -8,10 +8,11 @@ module RayGenerator #(
     )(
     input logic clock,
     input logic reset,
-    
+
     input logic start,
     output logic busy,
     output logic ready,
+    input logic normalize,
 
     input logic signed [POSITION_WIDTH-1:0] cameraV [2:0],
     input logic signed [POSITION_WIDTH-1:0] cameraX [2:0],
@@ -187,13 +188,13 @@ module RayGenerator #(
 
             // (9) regenerate ray
             for (int i = 0; i < 3; i++) begin
-                rayV[i] <= 16'(y2 * regenV[i] * 7 / 8);
+                rayV[i] <= normalize ? 16'(y2 * regenV[i] * 15 / 16) : regenV[i];
             end
             rayAddress <= ADDRESS_WIDTH'(x[9]) + y[9]*width + frameAddress;
         end
     end
 
-    if (1) begin
+    if (0) begin
         always_ff @(posedge clock) begin
             $display("state: %d, advance: %b", state, advance);
             for (int i = 0; i < 10; i++) begin

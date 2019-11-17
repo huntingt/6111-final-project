@@ -7,6 +7,7 @@ RayGenerator::RayGenerator(int timeout) {
     dut->start = 0;
     dut->rayReady = 0;
     dut->rayBusy = 0;
+    dut->normalize = 1;
     cycles = 0;
 
     reset();

@@ -36,7 +36,7 @@ class Ray {
     }
 
     static vector<int> normalize(vector<int> v, int bitWidth) {
-        const double unit = 0.9 * pow(2, bitWidth-1) - 1.0;
+        const double unit = 3./4 * pow(2, bitWidth-1) - 1.0;
         
         double norm = 0;
         for(int vi : v){
