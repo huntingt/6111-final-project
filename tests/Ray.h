@@ -56,6 +56,11 @@ class Ray {
     int X() { return x; }
     int Y() { return y; }
     int Z() { return z; }
+
+    int norm() {
+        double sum = (double(x))*x + (double(y))*y + (double(z))*z;
+        return pow(sum, 0.5);
+    }
     private:
     int x;
     int y;

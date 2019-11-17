@@ -43,7 +43,22 @@ void RayGenerator::start() {
 }
 
 tuple<int, Ray> RayGenerator::getRay() {
-    throw runtime_error("not yet implemented");
+    dut->rayReady = 1;
+    for (int i = 0; i < timeout; i++) {
+        if (dut->rayStart) {
+            tuple<int, Ray> result =
+                {dut->rayAddress, Ray(dut->rayV[0], dut->rayV[1], dut->rayV[2])};
+            
+            step();
+            dut->rayReady = 0;
+
+            return result;
+        }
+
+        step();
+    }
+
+    throw runtime_error("getRay() timeout after " + to_string(timeout) + " cycles");
 }
 
 vector<tuple<int, Ray>> RayGenerator::getRays() {

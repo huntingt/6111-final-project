@@ -24,12 +24,12 @@ int main(int argc, char** argv) {
 TEST_CASE("test RayGenerator startup") {
     RayGenerator dut = RayGenerator();
     
-    Ray cameraV = Ray(0, 0, 0);
+    Ray cameraV = Ray(512, 0, 0);
     Ray cameraX = Ray(0, 0, 0);
     Ray cameraY = Ray(0, 0, 0);
 
     dut.setCamera(cameraV, cameraX, cameraY);
-    dut.setFrame(500, 500, 0);
+    dut.setFrame(3, 3, 7);
     
     REQUIRE( dut.ready() );
     REQUIRE( !dut.busy() );
@@ -38,4 +38,20 @@ TEST_CASE("test RayGenerator startup") {
 
     REQUIRE( !dut.ready() );
     REQUIRE( dut.busy() );
+
+    SECTION("get a generated ray") {
+        auto [address, ray] = dut.getRay();
+
+        REQUIRE( address == 7 );
+        int norm = ray.norm();
+        REQUIRE( norm > 1.7*(1<<15) );
+        REQUIRE( norm < (1<<16) );
+    }
+    SECTION("check address incrementing") {
+        auto [address1, r1] = dut.getRay();
+        auto [address2, r2] = dut.getRay();
+
+        REQUIRE( address1 == 7 );
+        REQUIRE( address2 == 8 );
+    }
 }
