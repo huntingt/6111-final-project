@@ -52,7 +52,10 @@ class Ray {
 
         return result;
     }
-
+    
+    int X() { return x; }
+    int Y() { return y; }
+    int Z() { return z; }
     private:
     int x;
     int y;

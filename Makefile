@@ -14,7 +14,7 @@ stepper:
 gen:
 	verilator $(VFLAGS)\
 		-cc RayGenerator.sv\
-		--exe ../tests/RayGenerator.cpp
+		--exe ../tests/RayGenerator.cpp ../tests/RayGeneratorTests.cpp
 	make -j -C verilated -f VRayGenerator.mk VRayGenerator
 	./verilated/VRayGenerator
 

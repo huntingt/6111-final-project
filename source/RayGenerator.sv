@@ -90,9 +90,9 @@ module RayGenerator #(
         
         anyBusy[9] = valid[9];
         for (int i = 0; i < 9; i++) begin
-            anyBusy[i] = valid[i] | anyBusy[i + 1];
+            anyBusy[i] = valid[i] || anyBusy[i + 1];
         end
-        busy = anyBusy[0] | rayBusy;
+        busy = anyBusy[0] || rayBusy || state != IDLE ;
         ready = state == IDLE;
     end
 
