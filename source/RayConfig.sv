@@ -35,6 +35,7 @@ module RayConfig #(
     MemoryBus.Slave bus
     );
 
+    logic lastReady;
     logic recieved;
     logic sent;
     logic queuedTransaction;
@@ -57,9 +58,13 @@ module RayConfig #(
             flush = 0;
             resetRT = reset;
         end
+
+        interrupt = ready && !lastReady;
     end
 
     always_ff @(posedge clock) begin
+        lastReady <= ready;
+
         if (reset) begin
             queuedTransaction <= 0;
         end else if (queuedTransaction) begin
