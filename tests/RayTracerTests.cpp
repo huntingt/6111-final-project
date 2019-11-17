@@ -43,6 +43,7 @@ TEST_CASE("test config port"){
         auto value = result.value();
 
         REQUIRE( value.from == from );
+        REQUIRE( value.data == 0b10 );
     }
     SECTION("try to write to address port") {
         const int from = 0;

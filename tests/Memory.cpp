@@ -36,7 +36,7 @@ void MemoryMaster::step1() {
     // now check the read channel
     if (*bus->smValid) {
         *bus->smTaken = true;
-        responses.push({*bus->smID, *bus->smData});
+        responses.push({*bus->smID & 0xFF, *bus->smData & 0xFFFFFF});
     } else {
         *bus->smTaken = false;
     }
@@ -114,7 +114,7 @@ void MemorySlaveController::step1() {
     // handle requests
     if (*bus->msValid) {
         MemoryRequest request =
-            {*bus->msID, *bus->msAddress, *bus->msData, *bus->msWrite};
+            {*bus->msID & 0xFF, *bus->msAddress, *bus->msData & 0xFFFFFF, *bus->msWrite};
 
         bool taken = false;
         for (MemorySlave* slave : slaves) {
