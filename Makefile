@@ -4,6 +4,13 @@ VFLAGS = -Wall\
 		 -Ibenches\
 		 -Mdir verilated
 
+tracer:
+	verilator $(VFLAGS)\
+		-cc RayTracerTB.sv\
+		--exe ../tests/RayTracerTests.cpp ../tests/RayTracer.cpp ../tests/Memory.cpp
+	make -j -C verilated -f VRayTracerTB.mk VRayTracerTB
+	./verilated/VRayTracer
+
 stepper:
 	verilator $(VFLAGS)\
 		-cc RayStepper.sv\

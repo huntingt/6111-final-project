@@ -73,7 +73,7 @@ module RayTracer #(
         .ADDRESS_WIDTH(ADDRESS_WIDTH)
     ) generator (
         .clock(clock),
-        .resetRT(reset),
+        .reset(resetRT),
         .start(start),
         .busy(busy),
         .ready(ready),
@@ -94,7 +94,7 @@ module RayTracer #(
         .POSITION_WIDTH(POSITION_WIDTH),
         .DATA_WIDTH(DATA_WIDTH),
         .ADDRESS_WIDTH(ADDRESS_WIDTH),
-        .MASTER_ID(MASTER_ID_BASE + 0)
+        .MASTER_ID(MASTER_ID_BASE)
     ) unit (
         .clock(clock),
         .reset(resetRT),

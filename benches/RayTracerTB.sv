@@ -5,14 +5,14 @@ module RayTracerTB #(
     parameter ADDRESS_WIDTH=32,
     
     parameter CONFIG_ADDRESS='h26,
-    parameter MASTER_ID_BASE=4,
+    parameter MASTER_ID_BASE=8'd4,
 
     parameter MASTER_ID_WIDTH=8
     )(
     input logic clock,
     input logic reset,
 
-    output logic interrupt,
+    output logic doneInterrupt,
 
     output logic [MASTER_ID_WIDTH-1:0] mmsID,
     output logic [ADDRESS_WIDTH-1:0] mmsAddress,
@@ -63,17 +63,17 @@ module RayTracerTB #(
     assign msmTaken = mem.smTaken;
     assign mem.smValid = msmValid;
 
-    assign cmsID = cfg.msID;
-    assign cmsAddress = cfg.msAddress;
-    assign cmsData = cfg.msData;
-    assign cmsWrite = cfg.msWrite;
-    assign cfg.msTaken = cmsTaken;
-    assign cmsValid = cfg.msValid;
-
-    assign cfg.smID = csmID;
-    assign cfg.smData = csmData;
-    assign csmTaken = cfg.smTaken;
-    assign cfg.smValid = csmValid;
+    assign cfg.msID = cmsID;
+    assign cfg.msAddress = cmsAddress;
+    assign cfg.msData = cmsData;
+    assign cfg.msWrite = cmsWrite;
+    assign cmsTaken = cfg.msTaken;
+    assign cfg.msValid = cmsValid;
+    
+    assign csmID = cfg.smID;
+    assign csmData = cfg.smData;
+    assign cfg.smTaken = csmTaken;
+    assign csmValid = cfg.smValid;
 
     RayTracer#(
         .POSITION_WIDTH(POSITION_WIDTH),
@@ -84,7 +84,7 @@ module RayTracerTB #(
     ) dut(
         .clock(clock),
         .reset(reset),
-        .interrupt(interrupt),
+        .interrupt(doneInterrupt),
         .configPort(cfg),
         .memoryPort(mem));
 endmodule: RayTracerTB

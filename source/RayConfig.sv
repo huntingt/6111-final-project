@@ -5,7 +5,7 @@ module RayConfig #(
     parameter ADDRESS_WIDTH=32,
     
     parameter ADDRESS=0,
-    parameter BASE_WIDTH=5,
+    parameter BASE_WIDTH=5
     )(
     input logic clock,
     input logic reset,
@@ -49,7 +49,7 @@ module RayConfig #(
         recieved = bus.msValid && bus.msTaken;
         sent = bus.smValid && bus.smTaken;
 
-        if (recieved && bus.msWrite && bus.Address[BASE_WIDTH-1:0] == 0) begin
+        if (recieved && bus.msWrite && bus.msAddress[BASE_WIDTH-1:0] == 0) begin
             start = bus.msData[0];
             flush = bus.msData[3];
             resetRT = bus.msData[4];
@@ -72,7 +72,7 @@ module RayConfig #(
                 queuedTransaction <= 0;
             end
         end else if (recieved && bus.msWrite) begin
-            case (bus.Address[BASE_WIDTH-1:0])
+            case (bus.msAddress[BASE_WIDTH-1:0])
                 'h0: normalize <= bus.msData[5];
                 'h1: materialAddress <= {bus.msData, 8'b0};
                 'h2: treeAddress <= {bus.msData, 8'b0};
@@ -93,7 +93,7 @@ module RayConfig #(
                 'h11: height <= 12'(bus.msData);
             endcase
         end else if (recieved && !bus.msWrite) begin
-            case (bus.Address[BASE_WIDTH-1:0]) begin
+            case (bus.msAddress[BASE_WIDTH-1:0])
                 'h0: bus.smData <= DATA_WIDTH'({normalize, 2'b0, busy, ready, 1'b0});
                 'h1: bus.smData <= materialAddress[31:8];
                 'h2: bus.smData <= treeAddress[31:8];
@@ -112,7 +112,7 @@ module RayConfig #(
                 'hf: bus.smData <= DATA_WIDTH'(cameraY[2]);
                 'h10: bus.smData <= DATA_WIDTH'(width);
                 'h11: bus.smData <= DATA_WIDTH'(height);
-            end
+            endcase
             queuedTransaction <= 1;
             bus.smID <= bus.msID;
         end
