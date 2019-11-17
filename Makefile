@@ -11,6 +11,13 @@ stepper:
 	make -j -C verilated -f VRayStepper.mk VRayStepper
 	./verilated/VRayStepper
 
+gen:
+	verilator $(VFLAGS)\
+		-cc RayGenerator.sv\
+		--exe ../tests/RayGenerator.cpp
+	make -j -C verilated -f VRayGenerator.mk VRayGenerator
+	./verilated/VRayGenerator
+
 memory:
 	verilator $(VFLAGS)\
 		-cc RayMemoryTB.sv\

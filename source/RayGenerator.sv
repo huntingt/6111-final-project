@@ -45,8 +45,9 @@ module RayGenerator #(
     logic [11:0] x [9:0];
     logic [11:0] y [9:0];
     logic valid [9:0];
+    logic anyBusy [9:0];
     
-    logic advanace;
+    logic advance;
     
     // leading zero pairs
     logic [2:0] lzp [3:0];
@@ -56,13 +57,13 @@ module RayGenerator #(
     logic l [3:0];
 
     logic [31:0] norm2;
-    logic [31:0] y0, y1;
+    logic [31:0] y0, y1, y2;
     logic [31:0] y0_norm2, y1_norm2;
     logic [31:0] ny0, ny1;
     logic [31:0] ny0_y0, ny1_y1;
     logic [31:0] ny0_norm2;
     logic [31:0] nyy0, nyy1;
-    logic [31:0] nyy0_y0, nyy1_y0;
+    logic [31:0] nyy0_y0, nyy1_y1;
     logic [31:0] nyy0_norm2;
 
     always_comb begin
@@ -76,7 +77,7 @@ module RayGenerator #(
 
         // zero counting
         for (int i = 0; i < 4; i++) begin
-            lzp[i] = {0, !h[i] & !l[i], !h[i] & l[i]};
+            lzp[i] = {1'b0, !h[i] & !l[i], !h[i] & l[i]};
         end
         
         lza[3] = lzp[3];
@@ -86,6 +87,13 @@ module RayGenerator #(
 
         advance = rayReady;
         rayStart = valid[9];
+        
+        anyBusy[9] = valid[9];
+        for (int i = 0; i < 9; i++) begin
+            anyBusy[i] = valid[i] | anyBusy[i + 1];
+        end
+        busy = anyBusy[0] | rayBusy;
+        ready = state == IDLE;
     end
 
     // normalization pipeline
@@ -101,7 +109,7 @@ module RayGenerator #(
         end else if (state == GENERATING) begin
             if (advance) begin
                 if (nextX < width) begin
-                    x[0] <= nextX
+                    x[0] <= nextX;
                 end else if (nextY < height) begin
                     y[0] <= nextY;
                     x[0] <= 0;
@@ -120,8 +128,8 @@ module RayGenerator #(
 
             // (0) 0. find vector (not carried forth)
             for (int i = 0; i < 3; i++) begin
-                genV[i] <= cameraX[i] * signed'(x[0] -  width/2)
-                         + cameraY[i] * signed'(height/2 - y[0])
+                genV[i] <= 16'(cameraX[i] * signed'(x[0] -  width/2))
+                         + 16'(cameraY[i] * signed'(height/2 - y[0]))
                          + cameraV[i];
             end
             
@@ -131,7 +139,7 @@ module RayGenerator #(
                     + genV[2]*genV[2]) >> 16;
 
             // (2) 2. find guess
-            y0 <= 1 << 16 + (lza[i]>>1);
+            y0 <= 1 << 16 + 5'(lza[0][2:1]);
             
             y0_norm2 <= norm2;
 
@@ -142,13 +150,13 @@ module RayGenerator #(
             ny0_norm2 <= y0_norm2;
             
             // (4) 3.2 mult step 2 and subtraction
-            nyy0 <= (3<<32) - ny0 * ny0_y0;
+            nyy0 <= (3<<16) - (ny0 * ny0_y0>>16);
             
             nyy0_y0 <= ny0_y0;
             nyy0_norm2 <= ny0_norm2;
             
             // (5) 3.3 mult step 3 and drop lower
-            y1 <= nyy0_y0 * nyy0 >> 33;
+            y1 <= nyy0_y0 * nyy0 >> 17;
             
             y1_norm2 <= nyy0_norm2;
             
@@ -158,24 +166,24 @@ module RayGenerator #(
             ny1_y1 <= y1;
             
             // (7) 4.2
-            nyy1 <= (3<<32) - ny1 * ny1_y1;
+            nyy1 <= (3<<16) - (ny1 * ny1_y1>>16);
 
             nyy1_y1 <= ny1_y1;
             
             // (8) 4.3
-            y2 <= nyy1_y1 * nyy1 >> 33;
+            y2 <= nyy1_y1 * nyy1 >> 17;
 
             for (int i = 0; i < 3; i++) begin
-                regenV[i] <= cameraX[i] * signed'(x[8] -  width/2)
-                           + cameraY[i] * signed'(height/2 - y[8])
+                regenV[i] <= 16'(cameraX[i] * signed'(x[8] -  width/2))
+                           + 16'(cameraY[i] * signed'(height/2 - y[8]))
                            + cameraV[i];
             end
 
             // (9) regenerate ray
             for (int i = 0; i < 3; i++) begin
-                rayV[i] <= y2 * regenV[i] * 7 >> 3;
+                rayV[i] <= 16'(y2 * regenV[i] * 7 / 8);
             end
-            rayAddress <= x[9] + y[9]*width + frameAddress;
+            rayAddress <= ADDRESS_WIDTH'(x[9]) + y[9]*width + frameAddress;
         end
     end
 

@@ -16,10 +16,10 @@ def ainvsqrt(n):
 
     for i in range(2):
         # three in fixed point
-        three = 3<<2*bits
+        three = 3<<bits
 
         # convert back to f16 for y
-        y = y * (three - (n*y>>bits)*y) >> 2*bits + 1
+        y = y * (three - ((n*y>>bits)*y>>bits)) >> bits + 1
         
     return y
 
