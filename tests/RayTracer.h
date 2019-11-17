@@ -17,7 +17,7 @@ class RayTracer {
      *
      * @param timeout used when waiting for an interrupt
      */
-    RayTracer(int timeout);
+    RayTracer(long timeout);
 
     /*
      * Performs the module reset sequence.
@@ -62,8 +62,8 @@ class RayTracer {
 
     VRayTracerTB* dut;
 
-    MemoryInterface memoryInterface;
-    MemoryInterface configInterface;
+    MemoryInterface memoryPort;
+    MemoryInterface configPort;
     
     MemorySlaveController* slave;
     MemoryMaster* master;

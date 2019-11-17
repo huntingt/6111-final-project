@@ -1,3 +1,5 @@
+#include "RayTracer.h"
+
 RayTracer::RayTracer(long timeout) {
     this->timeout = timeout;
     cycles = 0;
@@ -54,7 +56,7 @@ void RayTracer::step() {
 
 void RayTracer::reset() {
     dut->reset = 1;
-    dut->step();
+    step();
     dut->reset = 0;
 }
 
