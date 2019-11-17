@@ -62,7 +62,11 @@ tuple<int, Ray> RayGenerator::getRay() {
 }
 
 vector<tuple<int, Ray>> RayGenerator::getRays() {
-    throw runtime_error("not yet implemented");
+    vector<tuple<int, Ray>> result;
+    while(busy()) {
+        result.push_back(getRay());
+    }
+    return result;
 }
 
 bool RayGenerator::ready() {

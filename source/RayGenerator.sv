@@ -57,15 +57,15 @@ module RayGenerator #(
     logic h [7:0];
     logic l [7:0];
 
-    logic [31:0] norm2;
-    logic [31:0] y0, y1, y2;
-    logic [31:0] y0_norm2, y1_norm2;
-    logic [31:0] ny0, ny1;
-    logic [31:0] ny0_y0, ny1_y1;
-    logic [31:0] ny0_norm2;
-    logic [31:0] nyy0, nyy1;
-    logic [31:0] nyy0_y0, nyy1_y1;
-    logic [31:0] nyy0_norm2;
+    logic signed [31:0] norm2;
+    logic signed [31:0] y0, y1, y2;
+    logic signed [31:0] y0_norm2, y1_norm2;
+    logic signed [31:0] ny0, ny1;
+    logic signed [31:0] ny0_y0, ny1_y1;
+    logic signed [31:0] ny0_norm2;
+    logic signed [31:0] nyy0, nyy1;
+    logic signed [31:0] nyy0_y0, nyy1_y1;
+    logic signed [31:0] nyy0_norm2;
 
     always_comb begin
         nextX = x[0] + 1;
@@ -193,7 +193,7 @@ module RayGenerator #(
         end
     end
 
-    if (0) begin
+    if (1) begin
         always_ff @(posedge clock) begin
             $display("state: %d, advance: %b", state, advance);
             for (int i = 0; i < 10; i++) begin
