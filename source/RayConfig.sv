@@ -67,6 +67,7 @@ module RayConfig #(
 
         if (reset) begin
             queuedTransaction <= 0;
+            normalize <= 0;
         end else if (queuedTransaction) begin
             if (sent) begin
                 queuedTransaction <= 0;

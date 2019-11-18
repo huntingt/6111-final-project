@@ -57,6 +57,15 @@ lunit:
 	make -j -C verilated -f VRayUnitTB.mk VRayUnitTB
 	./verilated/VRayUnitTB
 
+ltr:
+	verilator $(VFLAGS)\
+		-CFLAGS "$(shell pkg-config --cflags opencv)"\
+		-LDFLAGS "$(shell pkg-config --libs opencv)"\
+		-cc RayTracerTB.sv\
+		--exe ../tests/LookTracer.cpp ../tests/RayTracer.cpp ../tests/Memory.cpp
+	make -j -C verilated -f VRayTracerTB.mk VRayTracerTB
+	./verilated/VRayTracerTB
+
 simple:
 	verilator $(VFLAGS)\
 		-cc Simple.sv\
