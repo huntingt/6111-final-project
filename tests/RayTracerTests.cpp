@@ -68,4 +68,59 @@ TEST_CASE("test config port"){
         REQUIRE( value.from == from );
         REQUIRE( value.data == magic );
     }
+    SECTION("use the wrapper methods") {
+        dut.writeRegister(RayTracer::HEIGHT, 234);
+        REQUIRE( dut.readRegister(RayTracer::HEIGHT) == 234 );
+    }
+}
+
+TEST_CASE("test small size") {
+    RayTracer dut = RayTracer(100);
+
+    const int materialAddress = 0;
+    const int treeAddress = 256;
+    const int frameAddress = 1024;
+
+    const int width = 3;
+    const int height = 3;
+
+    MemoryArray material = MemoryArray(materialAddress, 256);
+    for (int i = 0; i < 256; i++) {
+        int color = 0xFFFFFF;
+        material.write(i, color);
+    }
+
+    MemoryArray tree = MemoryArray(treeAddress, 256);
+    for (int i = 0; i < 8; i++) {
+        tree.write(i, 0xFFFF00);
+    }
+    
+    MemoryArray frame = MemoryArray(frameAddress, 512);
+    for (int i = 0; i < 10; i++) {
+        frame.write(i, 1);
+    }
+
+    dut.attach(&material);
+    dut.attach(&tree);
+    dut.attach(&frame);
+
+    Ray q = Ray(0, 0, 0);
+    Ray v = Ray(0, 0, 15*(1<<12));
+    Ray x = Ray(0, 0, 0);
+    Ray y = Ray(0, 0, 0);
+    
+    dut.setCamera(q, v, x, y);
+    dut.setScene(materialAddress, treeAddress);
+    dut.setFrame(width, height, frameAddress);
+
+    dut.start();
+
+    dut.waitForInterrupt();
+
+    bool allZeros = true;
+    for (int i = 0; i < 9; i++) {
+        allZeros &= frame.read(i) != 1;
+    }
+    REQUIRE( allZeros );
+    REQUIRE( frame.read(9) == 1 );
 }

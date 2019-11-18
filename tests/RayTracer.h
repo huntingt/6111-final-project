@@ -5,6 +5,7 @@
 #include <tuple>
 #include <vector>
 #include <exception>
+#include "Ray.h"
 #include "Memory.h"
 #include "VRayTracerTB.h"
 
@@ -12,6 +13,27 @@ using namespace std;
 
 class RayTracer {
     public:
+    enum Register {
+        CONFIG=0x0,
+        MATERIAL,
+        TREE,
+        FRAME,
+        QX,
+        QY,
+        QZ,
+        VX,
+        VY,
+        VZ,
+        XX,
+        XY,
+        XZ,
+        YX,
+        YY,
+        YZ,
+        WIDTH,
+        HEIGHT
+    };
+    
     /*
      * Make a new ray tracer.
      *
@@ -54,9 +76,19 @@ class RayTracer {
      */
     long getCycles();
 
+    void start();
+    void setCamera(Ray q, Ray v, Ray x, Ray y);
+    void setScene(int materialAddress, int treeAddress);
+    void setFrame(int width, int height, int frameAddress);
+
+    void writeRegister(Register reg, int value);
+    int readRegister(Register reg);
+
     ~RayTracer();
 
     private:
+    const int base = 0x26 << 5;
+
     long timeout;
     long cycles;
 

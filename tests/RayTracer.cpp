@@ -52,6 +52,8 @@ void RayTracer::step() {
     
     slave->step2();
     master->step2();
+
+    cycles += 1;
 }
 
 void RayTracer::reset() {
@@ -73,6 +75,7 @@ void RayTracer::waitForInterrupt() {
         if (dut->doneInterrupt) {
             return;
         }
+        step();
     }
 
     throw runtime_error("timed out after " + to_string(timeout) + " cycles");
@@ -84,6 +87,76 @@ void RayTracer::attach(MemorySlave* slave) {
 
 long RayTracer::getCycles() {
     return cycles;
+}
+
+void RayTracer::start() {
+    int value = readRegister(CONFIG);
+    writeRegister(CONFIG, value | 1);
+}
+
+void RayTracer::setCamera(Ray q, Ray v, Ray x, Ray y) {
+    writeRegister(QX, q.X());
+    writeRegister(QY, q.Y());
+    writeRegister(QZ, q.Z());
+
+    writeRegister(VX, v.X());
+    writeRegister(VY, v.Y());
+    writeRegister(VZ, v.Z());
+
+    writeRegister(XX, x.X());
+    writeRegister(XY, x.Y());
+    writeRegister(XZ, x.Z());
+    
+    writeRegister(YX, y.X());
+    writeRegister(YY, y.Y());
+    writeRegister(YZ, y.Z());
+}
+
+void RayTracer::setScene(int materialAddress, int treeAddress) {
+    if (treeAddress & 0xFF || materialAddress & 0xFF) {
+        throw runtime_error("address must be aligned properly");
+    }
+
+    writeRegister(MATERIAL, materialAddress >> 8);
+    writeRegister(TREE, treeAddress >> 8);
+}
+
+void RayTracer::setFrame(int width, int height, int frameAddress) {
+    if (frameAddress & 0xFF) {
+        throw runtime_error("address must be aligned properly");
+    }
+
+    writeRegister(WIDTH, width);
+    writeRegister(HEIGHT, height);
+    writeRegister(FRAME, frameAddress >> 8);
+}
+
+void RayTracer::writeRegister(Register reg, int value) {
+    makeRequest({255, base + reg, value, 1});
+    step();
+}
+
+int RayTracer::readRegister(Register reg) {
+    makeRequest({255, base + reg, 0, 0});
+    step();
+
+    for (int i = 0; i < 16; i++) {
+        step();
+        auto response = readResponse();
+    
+        if (response.has_value()) {
+            auto value = response.value();
+
+            if (value.from != 255) {
+                throw runtime_error("may have intercepted a message from "
+                        + to_string(value.from) + " while trying to read " + to_string(reg));
+            }
+
+            return value.data;
+        }
+    }
+
+    throw runtime_error("timed out while trying to read " + to_string(reg));
 }
 
 RayTracer::~RayTracer() {
