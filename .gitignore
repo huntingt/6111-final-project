@@ -1,1 +1,3 @@
 verilated/
+__pycache__/
+*.pyc

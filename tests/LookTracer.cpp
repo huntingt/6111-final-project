@@ -29,7 +29,7 @@ int main() {
     }
 
     MemoryArray tree = MemoryArray(treeAddress, 1024, latency);
-    tree.loadFile("tests/cube.oc");
+    tree.loadFile("generate/chr_old.oc");
 
     MemoryArray frame = MemoryArray(frameAddress, width * height);
     
