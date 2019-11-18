@@ -23,10 +23,7 @@ int main() {
     
     // Maps material index to greyscale color
     MemoryArray material = MemoryArray(materialAddress, 256, latency);
-    for (int i = 0; i < 256; i++) {
-        int color = i + (i << 8) + (i << 16);
-        material.write(i, color);
-    }
+    material.loadFile("generate/chr_old.mat");    
 
     MemoryArray tree = MemoryArray(treeAddress, 1024, latency);
     tree.loadFile("generate/chr_old.oc");
@@ -37,10 +34,10 @@ int main() {
     dut.attach(&material);
     dut.attach(&frame);
     
-    const double right = -60;
-    const double down = 35;
+    const double right = 47;
+    const double down = 13;
 
-    Ray q = Ray(60000, 58000, 0);
+    Ray q = Ray(0, 25000, 30000);
     Ray v = Ray(0, 0, 30000).rotx(down).roty(right);
     Ray x = Ray(75, 0, 0).rotx(down).roty(right);
     Ray y = Ray(0, 75, 0).rotx(down).roty(right);
@@ -56,10 +53,15 @@ int main() {
 
     dut.waitForInterrupt();
 
-    Mat image = Mat(width, height, CV_8U);
+    Mat image = Mat(width, height, CV_8UC3);
     for(int i = 0; i < image.rows; i++){
         for(int j = 0; j < image.cols; j++){
-            image.at<uchar>(i,j) = frame.read(i*width + j);
+            unsigned int val = frame.read(i*width + j);
+            unsigned int mask = 0xFF;
+            uint8_t r = val & mask;
+            uint8_t g = (val>>8) & mask;
+            uint8_t b = (val>>16) & mask;
+            image.at<cv::Vec3b>(i,j) = {b, g, r};
         }
     }
 
