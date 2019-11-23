@@ -21,9 +21,9 @@ module RayTracer #(
     logic [ADDRESS_WIDTH-1:0] frameAddress;
 
     logic [POSITION_WIDTH-1:0] cameraQ [2:0];
-    logic [POSITION_WIDTH-1:0] cameraV [2:0];
-    logic [POSITION_WIDTH-1:0] cameraX [2:0];
-    logic [POSITION_WIDTH-1:0] cameraY [2:0];
+    logic signed [POSITION_WIDTH-1:0] cameraV [2:0];
+    logic signed [POSITION_WIDTH-1:0] cameraX [2:0];
+    logic signed [POSITION_WIDTH-1:0] cameraY [2:0];
 
     logic [11:0] width;
     logic [11:0] height;

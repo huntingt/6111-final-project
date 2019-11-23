@@ -15,9 +15,9 @@ module RayConfig #(
     output logic [ADDRESS_WIDTH-1:0] frameAddress,
 
     output logic [POSITION_WIDTH-1:0] cameraQ [2:0],
-    output logic [POSITION_WIDTH-1:0] cameraV [2:0],
-    output logic [POSITION_WIDTH-1:0] cameraX [2:0],
-    output logic [POSITION_WIDTH-1:0] cameraY [2:0],
+    output logic signed [POSITION_WIDTH-1:0] cameraV [2:0],
+    output logic signed [POSITION_WIDTH-1:0] cameraX [2:0],
+    output logic signed [POSITION_WIDTH-1:0] cameraY [2:0],
 
     output logic [11:0] width,
     output logic [11:0] height,

@@ -43,13 +43,13 @@ module RayTracerTB #(
         .DATA_WIDTH(DATA_WIDTH),
         .ADDRESS_WIDTH(ADDRESS_WIDTH),
         .MASTER_ID_WIDTH(MASTER_ID_WIDTH)
-    ) cfg;
+    ) cfg ();
 
     MemoryBus#(
         .DATA_WIDTH(DATA_WIDTH),
         .ADDRESS_WIDTH(ADDRESS_WIDTH),
         .MASTER_ID_WIDTH(MASTER_ID_WIDTH)
-    ) mem;
+    ) mem ();
     
     assign mmsID = mem.msID;
     assign mmsAddress = mem.msAddress;
