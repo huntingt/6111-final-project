@@ -4,7 +4,7 @@ module RayTracerTB #(
     parameter DATA_WIDTH=24,
     parameter ADDRESS_WIDTH=32,
     
-    parameter CONFIG_ADDRESS='h26,
+    parameter CONFIG_ADDRESS='h4C0,
     parameter MASTER_ID_BASE=8'd4,
 
     parameter MASTER_ID_WIDTH=8

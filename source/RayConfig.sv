@@ -41,7 +41,7 @@ module RayConfig #(
     logic queuedTransaction;
 
     always_comb begin
-        bus.msTaken = bus.msAddress[ADDRESS_WIDTH-1:BASE_WIDTH] == ADDRESS
+        bus.msTaken = {bus.msAddress[ADDRESS_WIDTH-1:BASE_WIDTH], BASE_WIDTH'(0)} == ADDRESS
             && bus.msValid
             && !queuedTransaction;
         bus.smValid = queuedTransaction;

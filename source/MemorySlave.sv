@@ -4,6 +4,8 @@ module MemorySlave(
 
     input logic [31:0] in,
     output logic [31:0] out,
+
+    MemoryBus.Slave bus
     );
 
     logic [23:0] field;
@@ -24,12 +26,12 @@ module MemorySlave(
         IDLE,
         SEND,
         TAKE,
-        WAIT,
-    } status;
+        WAIT
+    } state;
 
     always_comb begin
         case (command) inside
-            TRY_SEND, TRY_TAKE: out = state == WAIT;
+            TRY_SEND, TRY_TAKE: out = 32'(state == WAIT);
             READ_ADDRESS: out = bus.msAddress;
             READ_DATA: out = 32'(bus.msData);
             READ_MASTER_ID: out = 32'(bus.msID);
@@ -38,7 +40,7 @@ module MemorySlave(
         endcase
 
         bus.smValid = state == SEND;
-        bus.msTake = state == TAKE;
+        bus.msTaken = state == TAKE;
     end
 
     always_ff @(posedge clock) begin
@@ -50,6 +52,7 @@ module MemorySlave(
                 MASTER_ID: bus.smID <= field[7:0];
                 TRY_SEND: state <= SEND;
                 TRY_TAKE: state <= TAKE;
+                default: ;
             endcase
         end else if (state == SEND) begin
             if (bus.smValid && bus.smTaken) begin

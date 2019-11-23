@@ -6,7 +6,7 @@ module MemoryMaster(
     input logic [31:0] in,
     output logic [31:0] out,
 
-    MemoryBus.master bus
+    MemoryBus.Master bus
     );
     
     logic [23:0] field;
@@ -32,19 +32,19 @@ module MemoryMaster(
         IDLE,
         SEND,
         TAKE,
-        WAIT,
-    } status;
+        WAIT
+    } state;
 
     always_comb begin
         case (command) inside
-            TRY_SEND, TRY_TAKE: out = state == WAIT;
+            TRY_SEND, TRY_TAKE: out = 32'(state == WAIT);
             READ_DATA: out = 32'(bus.smData);
             READ_MASTER_ID: out = 32'(bus.smID);
             default: out = 32'hxxxxxxxx;
         endcase
 
         bus.msValid = state == SEND;
-        bus.smTake = state == TAKE;
+        bus.smTaken = state == TAKE;
     end
 
     always_ff @(posedge clock) begin
@@ -54,11 +54,12 @@ module MemoryMaster(
             case (command)
                 ADDRESS_LOWER: lowerAddress <= field;
                 ADDRESS_UPPER: upperAddress <= field[7:0];
-                DATA: data <= field;
+                DATA: bus.msData <= field;
                 MASTER_ID: bus.msID <= field[7:0];
                 WRITE: bus.msWrite <= field[0];
                 TRY_SEND: state <= SEND;
                 TRY_TAKE: state <= TAKE;
+                default: ;
             endcase
         end else if (state == SEND) begin
             if (bus.msValid && bus.msTaken) begin
