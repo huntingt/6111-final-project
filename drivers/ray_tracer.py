@@ -42,7 +42,7 @@ class RayTracer:
     def ready(self):
         return self.getConfig(ConfigField.READY)
 
-    def setConfig(field, value):
+    def setConfig(self, field, value):
         current = self.read(Field.CONFIG)
         mask = 1 << field.value
         if value:
@@ -50,12 +50,12 @@ class RayTracer:
         else:
             self.write(Field.CONFIG, current & ~mask)
 
-    def getConfig(field):
+    def getConfig(self, field):
         current = self.read(Field.CONFIG)
         mask = 1 << field.value
         return (current & mask) == 1
 
-    def setCamera(q, v, x, y):
+    def setCamera(self, q, v, x, y):
         qz, qy, qz = q
         self.write(Field.QX, qx)
         self.write(Field.QY, qy)
@@ -76,11 +76,11 @@ class RayTracer:
         self.write(Field.YY, yy)
         self.write(Field.YY, yz)
 
-    def setScene(materialAddress, treeAddress):
+    def setScene(self, materialAddress, treeAddress):
         self.write(Field.MATERIAL, materialAddress >> 8)
         self.write(Field.TREE, treeAddress >> 8)
 
-    def setFrame(width, height, frameAddress):
+    def setFrame(self, width, height, frameAddress):
         self.write(Field.WIDTH, width)
         self.write(Field.HEIGHT, height)
         self.write(Field.FRAME, frameAddress)
