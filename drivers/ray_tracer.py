@@ -56,7 +56,7 @@ class RayTracer:
         return (current & mask) == 1
 
     def setCamera(self, q, v, x, y):
-        qz, qy, qz = q
+        qx, qy, qz = q
         self.write(Field.QX, qx)
         self.write(Field.QY, qy)
         self.write(Field.QZ, qz)
