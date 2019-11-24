@@ -40,7 +40,7 @@ class MemoryMaster:
         self._write(0, MasterCommand.READ_DATA)
         data = self._read() & 0xFFFFFF
         self._write(0, MasterCommand.TRY_TAKE)
-        if (self.read() == 0):
+        if (self._read() == 0):
             return None
         
         self._write(0, MasterCommand.NONE)
