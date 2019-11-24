@@ -25,7 +25,7 @@ module RayGenerator #(
     input logic [ADDRESS_WIDTH-1:0] frameAddress,
 
     // output to ray units
-    output logic signed [POSITION_WIDTH-1:0] rayV [2:0],
+    output logic [POSITION_WIDTH-1:0] rayV [2:0],
     output logic [ADDRESS_WIDTH-1:0] rayAddress,
     output logic rayStart,
     input logic rayReady,
