@@ -1,4 +1,5 @@
 from enum import Enum
+import numpy as np
 
 class MasterCommand(Enum):
     NONE = 0
@@ -86,7 +87,7 @@ class MemoryMaster:
 
         self.port.write(value, 0xFFFFFFFF)
 
-class SlaveCommands(Enum):
+class SlaveCommand(Enum):
     NONE = 0
     DATA = 1
     MASTER_ID = 2
@@ -96,6 +97,61 @@ class SlaveCommands(Enum):
     READ_MASTER_ID = 6
     READ_WRITE = 7
     TRY_TAKE = 8
+
+class MemoryBankController:
+    def __init__(self, port):
+        self.port = port
+        self.slaves = []
+
+    def attach(self, slave):
+        self.slaves.append(slave)
+
+    def step(self):
+        result = self.port.take()
+
+        if result is None:
+            return
+
+        for slave in self.slaves:
+            slave.process(port, result)
+
+class MemoryBank:
+    def __init__(self, address, size):
+        self.address = address
+        self.size = size
+        self.memory = np.zeros(size, dtype="int32")
+
+    def read(self, i):
+        return self.memory[i]
+
+    def write(self, i, value):
+        self.memory[i] = value
+
+    def loadFile(self, filename):
+        i = 0
+        with open(filename, "r") as f:
+            for line in f.readLines():
+                if line.startswith("#") or line == "":
+                   continue
+                
+                self.memory[i] = int(line)
+
+                if i >= self.size:
+                    break
+
+    def process(self, port, result):
+        address, data, write, mID = result
+
+        raddr = address - self.address
+        if not (0 <= raddr < self.size):
+            return False
+
+        if write:
+            self.write(raddr)
+        else:
+            port.repsond(self.read(raddr), mID)
+
+        return True
 
 class MemorySlave:
     def __init__(self, port, addresses=(0,0xFFFFFFFF+1)):
@@ -128,7 +184,7 @@ class MemorySlave:
 
         return (address, data, write, mID)
 
-    def _respond(data, mID):
+    def respond(self, data, mID):
         self._set_data(data)
         self._set_master_ID(mID)
         self._write(0, SlaveCommand.TRY_SEND)
