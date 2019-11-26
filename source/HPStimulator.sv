@@ -2,8 +2,8 @@ module HPStimulator(
     input logic clock,
     input logic reset,
 
-    input logic [31:0] in,
-    output logic [31:0] out,
+    input logic [31:0] gpio_in,
+    output logic [31:0] gpio_out,
 
     input logic arready,
     input logic awready,
@@ -85,20 +85,18 @@ module HPStimulator(
     logic rx_last;
 
     always_comb begin
-        command = Command'(in[31:24]);
-        field = in[23:0];
-
-        ready = write ? (wready && awready) : arready;
+        command = Command'(gpio_in[31:24]);
+        field = gpio_in[23:0];
 
         case (command)
-            GET_READY: out = {29'b0, awready, arready, wready};
-            GET_DATA: out = rx_data;
-            GET_WRITE: out = 32'(rx_write);
-            GET_VALID: out = 32'(rx_valid);
-            GET_RESPONSE: out = 32'(rx_response);
-            GET_ID: out = 32'(rx_id);
-            GET_LAST: out = 32'(rx_last);
-            default: out = 32'hXXXXXXXX;
+            GET_READY: gpio_out = {29'b0, awready, arready, wready};
+            GET_DATA: gpio_out = rx_data;
+            GET_WRITE: gpio_out = 32'(rx_write);
+            GET_VALID: gpio_out = 32'(rx_valid);
+            GET_RESPONSE: gpio_out = 32'(rx_response);
+            GET_ID: gpio_out = 32'(rx_id);
+            GET_LAST: gpio_out = 32'(rx_last);
+            default: gpio_out = 32'hXXXXXXXX;
         endcase
     end
 
@@ -113,6 +111,7 @@ module HPStimulator(
             default: ;
         endcase
     end
+
 
     logic rx_write_ready;
     logic rx_read_ready;
