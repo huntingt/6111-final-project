@@ -46,7 +46,7 @@ module HPStimulator(
     output logic [3:0] wstrb
     );
 
-    enum logic [7:0] {
+    typedef enum logic [7:0] {
         DATA,
         ADDRESS,
         CACHE,
@@ -62,7 +62,8 @@ module HPStimulator(
         GET_ID,
         GET_LAST,
         CLEAR
-    } command;
+    } Command;
+    Command command;
     logic [23:0] field;
 
     logic [31:0] data;
@@ -75,9 +76,16 @@ module HPStimulator(
     logic valid;
 
     logic ready;
+    
+    logic [1:0] rx_response;
+    logic [31:0] rx_data;
+    logic rx_write;
+    logic rx_valid;
+    logic [5:0] rx_id;
+    logic rx_last;
 
     always_comb begin
-        command = in[31:24];
+        command = Command'(in[31:24]);
         field = in[23:0];
 
         ready = write ? (wready && awready) : arready;
@@ -105,13 +113,6 @@ module HPStimulator(
             default: ;
         endcase
     end
-
-    logic [1:0] rx_response;
-    logic [31:0] rx_data;
-    logic rx_write;
-    logic rx_valid;
-    logic [5:0] rx_id;
-    logic rx_last;
 
     logic rx_write_ready;
     logic rx_read_ready;
