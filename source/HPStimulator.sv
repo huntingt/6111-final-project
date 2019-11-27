@@ -136,7 +136,7 @@ module HPStimulator(
     logic [23:0] field;
 
     // used to send only one transaction at a time
-    logic waitSent;
+    logic waitSend;
 
     // send fields
     logic [31:0] data;
@@ -239,7 +239,7 @@ module HPStimulator(
             if (valid && ready) begin
                 valid <= 0;
             end else begin
-                if (command == SEND && !waitSent) begin
+                if (command == SEND && !waitSend) begin
                     valid <= 1;
                     waitSend <= 1;
                 end else if (command == CLEAR) begin
