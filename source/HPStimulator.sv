@@ -261,10 +261,10 @@ module HPStimulator(
         rready = rx_read_ready;
         wlast = write && valid; // same as wvalid
         wvalid = write && valid;
-        arburst = 0;
+        arburst = 2'b01;
         arlock = 0;
         arsize = 'b010;
-        awburst = 0;
+        awburst = 2'b01;
         awlock = 0;
         awsize = 'b010;
         arprot = protection;

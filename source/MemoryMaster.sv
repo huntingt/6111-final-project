@@ -15,12 +15,14 @@ module MemoryMaster(
         ADDRESS_LOWER,
         ADDRESS_UPPER,
         DATA,
-        MASTER_ID,
+        ID,
         WRITE,
-        TRY_SEND,
-        READ_DATA,
-        READ_MASTER_ID,
-        TRY_TAKE
+        SEND,
+        GET_PENDING,
+        GET_DATA,
+        GET_ID,
+        GET_VALID,
+        CLEAR
     } command;
     assign {command, field} = in;
 
@@ -28,52 +30,49 @@ module MemoryMaster(
     logic [7:0] upperAddress;
     assign bus.msAddress = {upperAddress, lowerAddress};
 
-    enum logic[1:0] {
-        IDLE,
-        SEND,
-        TAKE,
-        WAIT
-    } state;
+    logic [23:0] rx_data;
+    logic [7:0] rx_id;
+    logic rx_valid;
 
     always_comb begin
         case (command) inside
-            TRY_SEND, TRY_TAKE: out = 32'(state == WAIT);
-            READ_DATA: out = 32'(bus.smData);
-            READ_MASTER_ID: out = 32'(bus.smID);
+            GET_PENDING: out = 32'(bus.msValid);
+            GET_DATA: out = 32'(rx_data);
+            GET_ID: out = 32'(rx_id);
+            GET_VALID: out = 32'(rx_valid);
             default: out = 32'hxxxxxxxx;
         endcase
 
-        bus.msValid = state == SEND;
-        bus.smTaken = state == TAKE;
+        bus.smTaken = !rx_valid;
     end
 
     always_ff @(posedge clock) begin
         if (reset) begin
-            state <= IDLE;
-        end else if (state == IDLE) begin
+            bus.msValid <= 0;
+            rx_valid <= 0;
+        end else begin
+            if (bus.msValid && bus.msTaken) begin
+                bus.msValid <= 0;
+            end else if (command == SEND) begin
+                bus.msValid <= 1;
+            end
+
+            if (bus.smValid && bus.smTaken) begin
+                rx_data <= bus.smData;
+                rx_id <= bus.smID;
+                rx_valid <= 1;
+            end else if (command == CLEAR) begin
+                rx_valid <= 0;
+            end
+
             case (command)
                 ADDRESS_LOWER: lowerAddress <= field;
                 ADDRESS_UPPER: upperAddress <= field[7:0];
                 DATA: bus.msData <= field;
-                MASTER_ID: bus.msID <= field[7:0];
+                ID: bus.msID <= field[7:0];
                 WRITE: bus.msWrite <= field[0];
-                TRY_SEND: state <= SEND;
-                TRY_TAKE: state <= TAKE;
                 default: ;
             endcase
-        end else if (state == SEND) begin
-            if (bus.msValid && bus.msTaken) begin
-                state <= WAIT;
-            end
-        end else if (state == TAKE) begin
-            if (bus.smValid && bus.smTaken) begin
-                state <= WAIT;
-            end
-        end else if (state == WAIT) begin
-            if (command == NONE) begin
-                state <= IDLE;
-            end
         end
     end
-
 endmodule: MemoryMaster

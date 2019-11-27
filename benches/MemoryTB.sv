@@ -40,6 +40,7 @@ module MemoryTB(
         .bus(memory)
     );
 
+    /* verilator lint_off PINMISSING */
     RayTracer#(
         .DATA_WIDTH(DATA_WIDTH),
         .ADDRESS_WIDTH(ADDRESS_WIDTH),
@@ -50,4 +51,5 @@ module MemoryTB(
         .reset(reset),
         .configPort(cfg),
         .memoryPort(memory));
+    /* verilator lint_on PINMISSING */
 endmodule: MemoryTB
