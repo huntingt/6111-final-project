@@ -96,8 +96,8 @@ module HPStimulator(
         SEND,
 
         // check if the transaction is ready to send
-        // gpio_out[0]: write data channel ready
-        // gpio_out[1]: read address channel ready
+        // gpio_out[0]: read address channel ready
+        // gpio_out[1]: write data channel ready
         // gpio_out[2]: write address channel ready
         GET_READY,
 
@@ -169,7 +169,7 @@ module HPStimulator(
         field = gpio_in[23:0];
 
         case (command)
-            GET_READY: gpio_out = 32'({awready, arready, wready});
+            GET_READY: gpio_out = 32'({awready, wready, arready});
             GET_DATA: gpio_out = rx_data;
             GET_WRITE: gpio_out = 32'(rx_write);
             GET_VALID: gpio_out = 32'(rx_valid);
