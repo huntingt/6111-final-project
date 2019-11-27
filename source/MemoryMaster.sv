@@ -29,6 +29,7 @@ module MemoryMaster(
     logic [23:0] lowerAddress;
     logic [7:0] upperAddress;
     assign bus.msAddress = {upperAddress, lowerAddress};
+    logic sent;
 
     logic [23:0] rx_data;
     logic [7:0] rx_id;
@@ -50,11 +51,17 @@ module MemoryMaster(
         if (reset) begin
             bus.msValid <= 0;
             rx_valid <= 0;
+            sent <= 0;
         end else begin
             if (bus.msValid && bus.msTaken) begin
                 bus.msValid <= 0;
-            end else if (command == SEND) begin
+                sent <= 1;
+            end else if (command == SEND && !sent) begin
                 bus.msValid <= 1;
+            end
+
+            if (command != SEND) begin
+                sent <= 0;
             end
 
             if (bus.smValid && bus.smTaken) begin
