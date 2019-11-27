@@ -113,7 +113,7 @@ class MemoryBankController:
             return
 
         for slave in self.slaves:
-            slave.process(port, result)
+            slave.process(self.port, result)
 
 class MemoryBank:
     def __init__(self, address, size):
@@ -122,7 +122,7 @@ class MemoryBank:
         self.memory = np.zeros(size, dtype="int32")
 
     def read(self, i):
-        return self.memory[i]
+        return int(self.memory[i])
 
     def write(self, i, value):
         self.memory[i] = value
@@ -130,11 +130,15 @@ class MemoryBank:
     def loadFile(self, filename):
         i = 0
         with open(filename, "r") as f:
-            for line in f.readLines():
+            for line in f.readlines():
+                line = line.strip()
                 if line.startswith("#") or line == "":
                    continue
+
+                line = line.replace("_", "")
                 
-                self.memory[i] = int(line)
+                self.memory[i] = int(line, 0)
+                i += 1
 
                 if i >= self.size:
                     break
@@ -147,9 +151,9 @@ class MemoryBank:
             return False
 
         if write:
-            self.write(raddr)
+            self.write(raddr, data)
         else:
-            port.repsond(self.read(raddr), mID)
+            port.respond(self.read(raddr), mID)
 
         return True
 
@@ -167,7 +171,7 @@ class MemorySlave:
             return None
 
         self._write(0, SlaveCommand.READ_WRITE)
-        write = self._read() == 1
+        write = self._read() != 0
         
         self._write(0, SlaveCommand.READ_DATA)
         data = self._read() & 0xFFFFFF
