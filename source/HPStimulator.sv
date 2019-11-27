@@ -65,6 +65,7 @@ module HPStimulator(
     } Command;
     Command command;
     logic [23:0] field;
+    logic waitSent;
 
     logic [31:0] data;
     logic [31:0] address;
@@ -156,11 +157,16 @@ module HPStimulator(
             if (valid && ready) begin
                 valid <= 0;
             end else begin
-                if (command == SEND) begin
+                if (command == SEND && !waitSent) begin
                     valid <= 1;
+                    waitSend <= 1;
                 end else if (command == CLEAR) begin
                     valid <= 0;
                 end
+            end
+
+            if (command != SEND) begin
+                waitSend <= 0;
             end
         end
     end
