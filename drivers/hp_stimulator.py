@@ -23,48 +23,48 @@ class HPStimulator(FieldCommand):
         value = self._read(Command.GET_READY)
         ready = (0b110 & value) == 0b110
         if not ready:
-            raise RuntimeError('not ready to write, maybe there are queued
+            raise RuntimeError('not ready to write, maybe there are queued\
                                requests')
 
-        self._write(1, Command.WRITE)
-        self._write(id, Command.ID)
-        self._write(address, Command.ADDRESS)
-        self._write(data, Command.DATA)
-        self._write(0, Command.SEND)
+        self._write(Command.WRITE, 1)
+        self._write(Command.ID, id)
+        self._write(Command.ADDRESS, address >> 8)
+        self._write(Command.DATA, data >> 8)
+        self._write(Command.SEND)
 
     def read(self, id, address):
         value = self._read(Command.GET_READY)
         ready = (0b001 & value) == 0b001
         if not ready:
-            raise RuntimeError('not ready to read, maybe there are queued
+            raise RuntimeError('not ready to read, maybe there are queued\
                                requests')
 
-        self._write(0, Command.WRITE)
-        self._write(id, Command.ID)
-        self._write(address, Command.ADDRESS)
-        self._write(0, Command.SEND)
+        self._write(Command.WRITE, 0)
+        self._write(Command.ID, id)
+        self._write(Command.ADDRESS, address >> 8)
+        self._write(Command.SEND)
 
-    def setCache(self, cache);
-        self._write(cache, Command.CACHE)
+    def setCache(self, cache):
+        self._write(Command.CACHE, cache)
 
     def setProtection(self, protection):
-        self._write(protection, Command.PROTECTION)
+        self._write(Command.PROTECTION, protection)
 
     def response(self):
         if self._read(Command.GET_VALID):
+            output = {
+                "id": self._read(Command.GET_ID),
+                "response": self.responseField(),
+            }
+
             if self._read(Command.GET_WRITE):
-                return {
-                    "type": "read",
-                    "id": self._read(Command.GET_ID),
-                    "response": self.responseField(),
-                    "data": self._read(Command.GET_DATA)
-                }
+                output["type"] = "write"
             else:
-                return {
-                    "type": "write",
-                    "id": self._read(Command.GET_ID),
-                    "response": self.responseField()
-                }
+                output["type"] = "read"
+                output["data"] = self._read(Command.GET_DATA)
+            
+            self._write(Command.CLEAR)
+            return output
         else:
             return None
 

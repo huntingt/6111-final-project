@@ -53,7 +53,7 @@ class RayTracer:
     def getConfig(self, field):
         current = self.read(Field.CONFIG)
         mask = 1 << field.value
-        return (current & mask) == 1
+        return (current & mask) != 0
 
     def setCamera(self, q, v, x, y):
         qx, qy, qz = q
@@ -72,9 +72,9 @@ class RayTracer:
         self.write(Field.XZ, xz)
         
         yx, yy, yz = y
-        self.write(Field.YY, yx)
+        self.write(Field.YX, yx)
         self.write(Field.YY, yy)
-        self.write(Field.YY, yz)
+        self.write(Field.YZ, yz)
 
     def setScene(self, materialAddress, treeAddress):
         self.write(Field.MATERIAL, materialAddress >> 8)
@@ -83,7 +83,7 @@ class RayTracer:
     def setFrame(self, width, height, frameAddress):
         self.write(Field.WIDTH, width)
         self.write(Field.HEIGHT, height)
-        self.write(Field.FRAME, frameAddress)
+        self.write(Field.FRAME, frameAddress >> 8)
 
     def write(self, field, value):
         self.port.write(self.address + field.value, value)

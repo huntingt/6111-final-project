@@ -1,4 +1,5 @@
 from enum import Enum
+from field_command import FieldCommand
 import numpy as np
 
 class MasterCommand(Enum):
@@ -6,86 +7,56 @@ class MasterCommand(Enum):
     ADDRESS_LOWER = 1
     ADDRESS_UPPER = 2
     DATA = 3
-    MASTER_ID = 4
+    ID = 4
     WRITE = 5
-    TRY_SEND = 6
-    READ_DATA = 7
-    READ_MASTER_ID = 8
-    TRY_TAKE = 9
+    SEND = 6
+    GET_PENDING = 7
+    GET_DATA = 8
+    GET_ID = 9
+    GET_VALID = 10
+    CLEAR = 11
 
-FIELD_MASK = 0xFFFFFF
-
-class MemoryMaster:
-    def __init__(self, port, mID=0):
-        self.port = port
+class MemoryMaster(FieldCommand):
+    def __init__(self, channel, mID=0):
+        super().__init__(channel)
         self.mID = mID
-    
-    def read(self, address):
-        self.send(address, 0, False)
-        rx = self.recieve()
-        if (rx is None):
-            raise Exception(f"read to {address} timed out")
-        return rx
-
+        self._write(MasterCommand.ID, mID)
+   
     def write(self, address, data):
-        self.send(address, data, True)
+        self._set_address(address)
+        self._write(MasterCommand.DATA, data)
+        self._write(MasterCommand.WRITE, 1)
+        self._write(MasterCommand.SEND)
 
-    def recieve(self):
-        return self.recieveAs(self.mID)
+        # transaction should finish before this can be read
+        if self._read(MasterCommand.GET_PENDING):
+            raise RuntimeError("write transaction is still pending")
+        self._write(MasterCommand.NONE);
 
-    def recieveAs(self, mID):
-        self._write(0, MasterCommand.READ_MASTER_ID)
-        if (self._read() != mID):
-            return None
+    def read(self, address):
+        self._set_address(address)
+        self._write(MasterCommand.WRITE, 0)
+        self._write(MasterCommand.SEND)
 
-        self._write(0, MasterCommand.READ_DATA)
-        data = self._read() & 0xFFFFFF
-        self._write(0, MasterCommand.TRY_TAKE)
-        if (self._read() == 0):
+        # transaction should finish before this can be read
+        if self._read(MasterCommand.GET_PENDING):
+            raise RuntimeError("write transaction is still pending")
+
+        if self._read(MasterCommand.GET_VALID):
+            assert self.mID == self._read(MasterCommand.GET_ID)         
+            
+            data = self._read(MasterCommand.GET_DATA)
+            self._write(MasterCommand.CLEAR)
+
+            return data
+        else:
             return None
         
-        self._write(0, MasterCommand.NONE)
-        return data
-
-    def send(self, address, data, write):
-        self.sendAs(address, data, write, self.mID)
-
-    def sendAs(self, address, data, write, mID):
-        self._set_address(address)
-        self._set_data(data)
-        self._set_write(write)
-        self._set_master_ID(mID)
-        self._write(0, MasterCommand.TRY_SEND)
-
-        if (self.port.read() == 0):
-            raise Exception(f"send to {address} timed out")
-
-        self._write(0, MasterCommand.NONE)
-
-    def _set_write(self, write):
-        value = 1 if write else 0
-        self._write(value, MasterCommand.WRITE)
-
-    def _set_master_ID(self, mID):
-        self._write(mID, MasterCommand.MASTER_ID)
-
-    def _set_data(self, data):
-        self._write(data, MasterCommand.DATA)
-
     def _set_address(self, address):
-        lower = address & FIELD_MASK
-        upper = (address >> 24) & 0xFF;
-
-        self._write(lower, MasterCommand.ADDRESS_LOWER)
-        self._write(upper, MasterCommand.ADDRESS_UPPER)
-
-    def _read(self):
-        return self.port.read()
-
-    def _write(self, field, command):
-        value = (command.value << 24) + (field & FIELD_MASK)
-
-        self.port.write(value, 0xFFFFFFFF)
+        lower = 0xFFFFFF & address
+        upper = 0xFF & (address >> 24)
+        self._write(MasterCommand.ADDRESS_LOWER, lower)
+        self._write(MasterCommand.ADDRESS_UPPER, upper)
 
 class SlaveCommand(Enum):
     NONE = 0
@@ -113,7 +84,7 @@ class MemoryBankController:
             return
 
         for slave in self.slaves:
-            slave.process(port, result)
+            slave.process(self.port, result)
 
 class MemoryBank:
     def __init__(self, address, size):
@@ -122,7 +93,7 @@ class MemoryBank:
         self.memory = np.zeros(size, dtype="int32")
 
     def read(self, i):
-        return self.memory[i]
+        return int(self.memory[i])
 
     def write(self, i, value):
         self.memory[i] = value
@@ -130,11 +101,15 @@ class MemoryBank:
     def loadFile(self, filename):
         i = 0
         with open(filename, "r") as f:
-            for line in f.readLines():
+            for line in f.readlines():
+                line = line.strip()
                 if line.startswith("#") or line == "":
                    continue
+
+                line = line.replace("_", "")
                 
-                self.memory[i] = int(line)
+                self.memory[i] = int(line, 0)
+                i += 1
 
                 if i >= self.size:
                     break
@@ -147,9 +122,9 @@ class MemoryBank:
             return False
 
         if write:
-            self.write(raddr)
+            self.write(raddr, data)
         else:
-            port.repsond(self.read(raddr), mID)
+            port.respond(self.read(raddr), mID)
 
         return True
 
@@ -167,7 +142,7 @@ class MemorySlave:
             return None
 
         self._write(0, SlaveCommand.READ_WRITE)
-        write = self._read() == 1
+        write = self._read() != 0
         
         self._write(0, SlaveCommand.READ_DATA)
         data = self._read() & 0xFFFFFF
