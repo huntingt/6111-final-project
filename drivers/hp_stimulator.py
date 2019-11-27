@@ -23,28 +23,28 @@ class HPStimulator(FieldCommand):
         value = self._read(Command.GET_READY)
         ready = (0b110 & value) == 0b110
         if not ready:
-            raise RuntimeError('not ready to write, maybe there are queued
+            raise RuntimeError('not ready to write, maybe there are queued\
                                requests')
 
         self._write(1, Command.WRITE)
         self._write(id, Command.ID)
-        self._write(address, Command.ADDRESS)
-        self._write(data, Command.DATA)
+        self._write(address >> 8, Command.ADDRESS)
+        self._write(data >> 8, Command.DATA)
         self._write(0, Command.SEND)
 
     def read(self, id, address):
         value = self._read(Command.GET_READY)
         ready = (0b001 & value) == 0b001
         if not ready:
-            raise RuntimeError('not ready to read, maybe there are queued
+            raise RuntimeError('not ready to read, maybe there are queued\
                                requests')
 
         self._write(0, Command.WRITE)
         self._write(id, Command.ID)
-        self._write(address, Command.ADDRESS)
+        self._write(address >> 8, Command.ADDRESS)
         self._write(0, Command.SEND)
 
-    def setCache(self, cache);
+    def setCache(self, cache):
         self._write(cache, Command.CACHE)
 
     def setProtection(self, protection):
@@ -52,19 +52,19 @@ class HPStimulator(FieldCommand):
 
     def response(self):
         if self._read(Command.GET_VALID):
+            output = {
+                "id": self._read(Command.GET_ID),
+                "response": self.responseField(),
+            }
+
             if self._read(Command.GET_WRITE):
-                return {
-                    "type": "read",
-                    "id": self._read(Command.GET_ID),
-                    "response": self.responseField(),
-                    "data": self._read(Command.GET_DATA)
-                }
+                output["type"] = "write"
             else:
-                return {
-                    "type": "write",
-                    "id": self._read(Command.GET_ID),
-                    "response": self.responseField()
-                }
+                output["type"] = "read"
+                output["data"] = self._read(Command.GET_DATA)
+            
+            self._write(0, Command.CLEAR)
+            return output
         else:
             return None
 
