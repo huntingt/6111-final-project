@@ -2,9 +2,6 @@ module DramInterface(
     input logic clock,
     input logic reset,
 
-    input logic [31:0] gpio_in,
-    output logic [31:0] gpio_out,
-
     input logic arready,
     input logic awready,
     input logic bvalid,
@@ -54,6 +51,8 @@ module DramInterface(
     logic [2:0] protection;
     logic [5:0] id;
 
+    logic write;
+
     assign data = bus.msData;
     assign address = bus.msAddress;
     assign write = bus.msWrite;
@@ -61,10 +60,8 @@ module DramInterface(
     assign cache = 3;
     assign protection = 0;
 
-    logic write;
-    logic valid;
-
     logic ready;
+    logic valid;
 
     logic rx_write_ready;
     logic rx_read_ready;
@@ -80,7 +77,7 @@ module DramInterface(
    
         valid = bus.msValid;
         ready = write ? awready && wready : arready;
-        bus.msTaken = ready;
+        bus.msTaken = ready && valid;
     end
 
     always_ff @(posedge clock) begin
