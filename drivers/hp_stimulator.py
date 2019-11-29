@@ -3,20 +3,21 @@ from field_command import FieldCommand
 
 class Command(Enum):
     DATA = 0
-    ADDRESS = 1
-    CACHE = 2
-    PROTECTION = 3
-    ID = 4
-    WRITE = 5
-    SEND = 6
-    GET_READY = 7
-    GET_DATA = 8
-    GET_WRITE = 9
-    GET_VALID = 10
-    GET_RESPONSE = 11
-    GET_ID = 12
-    GET_LAST = 13
-    CLEAR = 14
+    ADDRESS_LOWER = 1
+    ADDRESS_UPPER = 2
+    CACHE = 3
+    PROTECTION = 4
+    ID = 5
+    WRITE = 6
+    SEND = 7
+    GET_READY = 8
+    GET_DATA = 9
+    GET_WRITE = 10
+    GET_VALID = 11
+    GET_RESPONSE = 12
+    GET_ID = 13
+    GET_LAST = 14
+    CLEAR = 15
 
 class HPStimulator(FieldCommand):
     def write(self, id, address, data):
@@ -28,7 +29,7 @@ class HPStimulator(FieldCommand):
 
         self._write(Command.WRITE, 1)
         self._write(Command.ID, id)
-        self._write(Command.ADDRESS, address >> 8)
+        self.setAddress(address)
         self._write(Command.DATA, data >> 8)
         self._write(Command.SEND)
 
@@ -41,8 +42,12 @@ class HPStimulator(FieldCommand):
 
         self._write(Command.WRITE, 0)
         self._write(Command.ID, id)
-        self._write(Command.ADDRESS, address >> 8)
+        self.setAddress(address)
         self._write(Command.SEND)
+
+    def setAddress(self, address):
+        self._write(Command.ADDRESS_LOWER, address & 0xffffff)
+        self._write(Command.ADDRESS_UPPER, (address >> 24) & 0xff)
 
     def setCache(self, cache):
         self._write(Command.CACHE, cache)

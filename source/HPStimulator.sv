@@ -63,9 +63,10 @@ module HPStimulator(
         // lower 8 bits set to 0
         DATA,
 
-        // set the upper 24 bits of the address field for writes and reads with
-        // the lower 8 bits set to 0
-        ADDRESS,
+        // set either the lower 24 bits of the address field or the upper
+        // 8 bits for both reads and writes
+        ADDRESS_LOWER,
+        ADDRESS_UPPER,
 
         // set the cache field for writes and reads
         // field[0]: bufferable - transaction can be delayed
@@ -184,7 +185,8 @@ module HPStimulator(
     always_ff @(posedge clock) begin
         case (command)
             DATA: data <= {field, 8'b0};
-            ADDRESS: address <= {field, 8'b0};
+            ADDRESS_LOWER: address <= {address[31:24], field};
+            ADDRESS_UPPER: address <= {field[7:0], address[23:0]};
             CACHE: cache <= field[3:0];
             PROTECTION: protection <= field[2:0];
             ID: id <= field[5:0];
