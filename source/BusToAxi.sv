@@ -61,7 +61,7 @@ module BusToAxi(
 
     logic [5:0] id = bus.msID[5:0];
     logic [31:0] data = 32'(bus.msData);
-    logic [31:0] address = {bus.msAddress[28:0], 3'b0};
+    logic [31:0] address = {bus.msAddress[29:0], 2'b0};
 
     // static settings
     logic rx_write_ready = 1;
