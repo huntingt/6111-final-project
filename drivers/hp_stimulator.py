@@ -9,15 +9,21 @@ class Command(Enum):
     PROTECTION = 4
     ID = 5
     WRITE = 6
-    SEND = 7
-    GET_READY = 8
-    GET_DATA = 9
-    GET_WRITE = 10
-    GET_VALID = 11
-    GET_RESPONSE = 12
-    GET_ID = 13
-    GET_LAST = 14
-    CLEAR = 15
+    BURST = 7
+    SEND = 8
+    GET_READY = 9
+    GET_DATA = 10
+    GET_WRITE = 11
+    GET_VALID = 12
+    GET_RESPONSE = 13
+    GET_ID = 14
+    GET_LAST = 15
+    CLEAR = 16
+
+class Burst(Enum):
+    FIXED = 0
+    INCR = 1
+    WRAP = 2
 
 class HPStimulator(FieldCommand):
     def write(self, id, address, data):
@@ -51,6 +57,9 @@ class HPStimulator(FieldCommand):
 
     def setCache(self, cache):
         self._write(Command.CACHE, cache)
+
+    def setBurst(self, burst):
+        self._write(Command.BURST, burst.value)
 
     def setProtection(self, protection):
         self._write(Command.PROTECTION, protection)

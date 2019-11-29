@@ -90,6 +90,9 @@ module HPStimulator(
         // field[0]: 1 - write; 0 - read
         WRITE,
 
+        // set the burst field
+        BURST,
+
         // send a single transction with the specified fields
         //
         // in order to send a second transaction, a different command
@@ -143,6 +146,7 @@ module HPStimulator(
     logic [31:0] data;
     logic [31:0] address;
     logic [3:0] cache;
+    logic [1:0] burst;
     logic [2:0] protection;
     logic [5:0] id;
     logic write;
@@ -189,6 +193,7 @@ module HPStimulator(
             ADDRESS_UPPER: address <= {field[7:0], address[23:0]};
             CACHE: cache <= field[3:0];
             PROTECTION: protection <= field[2:0];
+            BURST: burst <= field[1:0];
             ID: id <= field[5:0];
             WRITE: write <= field[0];
             default: ;
@@ -263,10 +268,10 @@ module HPStimulator(
         rready = rx_read_ready;
         wlast = write && valid; // same as wvalid
         wvalid = write && valid;
-        arburst = 2'b01;
+        arburst = burst;
         arlock = 0;
         arsize = 'b010;
-        awburst = 2'b01;
+        awburst = burst;
         awlock = 0;
         awsize = 'b010;
         arprot = protection;
