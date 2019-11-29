@@ -51,7 +51,7 @@ module BusToAxi(
     assign bus.smID = 8'(rid);
     assign bus.smData = rdata[23:0];
     assign bus.smValid = rvalid;
-    logic rx_ready_ready = bus.smTaken;
+    logic rx_read_ready = bus.smTaken;
 
     // convert from bus to axi
     logic write = bus.msWrite;

@@ -11,18 +11,18 @@ module MemoryMaster(
     
     logic [23:0] field;
     enum logic [7:0] {
-        NONE            = 0,
-        ADDRESS_LOWER   = 1,
-        ADDRESS_UPPER   = 2,
-        DATA            = 3,
-        ID              = 4,
-        WRITE           = 5,
-        SEND            = 6,
-        GET_PENDING     = 7,
-        GET_DATA        = 8,
-        GET_ID          = 9,
-        GET_VALID       = 10,
-        CLEAR           = 11
+        NONE,
+        ADDRESS_LOWER,
+        ADDRESS_UPPER,
+        DATA,
+        ID,
+        WRITE,
+        SEND,
+        GET_PENDING,
+        GET_DATA,
+        GET_ID,
+        GET_VALID,
+        CLEAR
     } command;
     assign {command, field} = in;
 
