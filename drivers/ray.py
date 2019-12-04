@@ -1,14 +1,13 @@
 from math import sin, cos, pi
 
 class Ray:
-    def __init__(self, value):
-        x, y, z = self.value
+    def __init__(self, x, y, z):
         self.x = x
         self.y = y
         self.z = z
 
     def toArray(self):
-        return (int(x), int(y), int(z))
+        return (int(self.x), int(self.y), int(self.z))
 
     def rotX(self, angle):
         angle = angle * pi / 180
