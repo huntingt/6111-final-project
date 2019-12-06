@@ -90,7 +90,7 @@ module RayTracer #(
         .rayReady(rayReady),
         .rayBusy(rayBusy));
 
-    RayUnitTwo #(
+    RayUnitThirtyTwo #(
         .POSITION_WIDTH(POSITION_WIDTH),
         .DATA_WIDTH(DATA_WIDTH),
         .ADDRESS_WIDTH(ADDRESS_WIDTH),
