@@ -52,8 +52,8 @@ module Crossbar_MS #(
     );
     
     localparam RAY_S_BASE = 32'h0;
-    localparam BRAM_BASE = 32'h11;
-    localparam DRAM_BASE = 32'h80;
+    localparam BRAM_BASE = 32'h100;
+    localparam DRAM_BASE = 32'h800;
     
     logic ray_m_ray_s;
     assign ray_m_ray_s = ray_m.msAddress < BRAM_BASE;
@@ -203,7 +203,7 @@ module Crossbar_MS #(
         if (ray_m.msValid && ray_m_dram && !(ps.msValid && ps_dram)) begin
         //pass from ray_m to dram
             dram.msID = ray_m.msID;
-            dram.msAddress = ray_m.msAddress;
+            dram.msAddress = ray_m.msAddress - DRAM_BASE;
             dram.msData = ray_m.msData;
             dram.msWrite = ray_m.msWrite;
             dram.msValid = ray_m.msValid;
@@ -215,7 +215,7 @@ module Crossbar_MS #(
         end else if (!(ray_m.msValid && ray_m_dram) && ps.msValid && ps_dram) begin
         //pass from ps to dram
             dram.msID = ps.msID;
-            dram.msAddress = ps.msAddress;
+            dram.msAddress = ps.msAddress - DRAM_BASE;
             dram.msData = ps.msData;
             dram.msWrite = ps.msWrite;
             dram.msValid = ps.msValid;
@@ -228,7 +228,7 @@ module Crossbar_MS #(
             if (dram_lru == LRU_RAY_M) begin
             //pass from ray_m to dram
                 dram.msID = ray_m.msID;
-                dram.msAddress = ray_m.msAddress;
+                dram.msAddress = ray_m.msAddress - DRAM_BASE;
                 dram.msData = ray_m.msData;
                 dram.msWrite = ray_m.msWrite;
                 dram.msValid = ray_m.msValid;
@@ -237,7 +237,7 @@ module Crossbar_MS #(
                 dram_state = PASS_RAY_M;
             end else begin
                 dram.msID = ps.msID;
-                dram.msAddress = ps.msAddress;
+                dram.msAddress = ps.msAddress - DRAM_BASE;
                 dram.msData = ps.msData;
                 dram.msWrite = ps.msWrite;
                 dram.msValid = ps.msValid;
