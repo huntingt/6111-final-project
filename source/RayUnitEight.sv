@@ -1,7 +1,7 @@
 /*
- * Top level container for a doubled up ray unit
+ * Top level container for a quad ray unit
  */
-module RayUnitTwo #(
+module RayUnitEight #(
     parameter POSITION_WIDTH=16,
     parameter DATA_WIDTH=24,
     parameter ADDRESS_WIDTH=32,
@@ -53,7 +53,7 @@ module RayUnitTwo #(
     assign ready = ready0 || ready1;
     assign busy = busy0 || busy1;
 
-    RayUnit#(
+    RayUnitFour#(
         .POSITION_WIDTH(POSITION_WIDTH),
         .DATA_WIDTH(DATA_WIDTH),
         .ADDRESS_WIDTH(ADDRESS_WIDTH),
@@ -73,11 +73,11 @@ module RayUnitTwo #(
         .bus(bus0)
     );
 
-    RayUnit#(
+    RayUnitFour#(
         .POSITION_WIDTH(POSITION_WIDTH),
         .DATA_WIDTH(DATA_WIDTH),
         .ADDRESS_WIDTH(ADDRESS_WIDTH),
-        .MASTER_ID(MASTER_ID+1)
+        .MASTER_ID(MASTER_ID+4)
     ) ru1 (
         .clock(clock),
         .reset(reset),
@@ -104,4 +104,4 @@ module RayUnitTwo #(
         .mbus(bus)
     );
 
-endmodule: RayUnitTwo
+endmodule: RayUnitEight
