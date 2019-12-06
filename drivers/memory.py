@@ -29,8 +29,9 @@ class MemoryMaster(FieldCommand):
         self._write(MasterCommand.SEND)
 
         # transaction should finish before this can be read
-        if self._read(MasterCommand.GET_PENDING):
-            raise RuntimeError("write transaction is still pending")
+        while self._read(MasterCommand.GET_PENDING):
+            pass
+        
         self._write(MasterCommand.NONE);
 
     def read(self, address):
@@ -38,20 +39,29 @@ class MemoryMaster(FieldCommand):
         self._write(MasterCommand.WRITE, 0)
         self._write(MasterCommand.SEND)
 
-        # transaction should finish before this can be read
-        if self._read(MasterCommand.GET_PENDING):
-            raise RuntimeError("write transaction is still pending")
-
-        if self._read(MasterCommand.GET_VALID):
-            assert self.mID == self._read(MasterCommand.GET_ID)         
-            
-            data = self._read(MasterCommand.GET_DATA)
-            self._write(MasterCommand.CLEAR)
-
-            return data
-        else:
-            return None
+        while self._read(MasterCommand.GET_PENDING):
+            pass
         
+        while not self._read(MasterCommand.GET_VALID):
+            pass
+
+        assert self.mID == self._read(MasterCommand.GET_ID)         
+        
+        data = self._read(MasterCommand.GET_DATA)
+        self._write(MasterCommand.CLEAR)
+
+        return data
+
+    def flush(self, mids):
+        self._write(MasterCommand.CLEAR)
+        for mid in mids:
+            self._write(MasterCommand.ID, mid)
+            
+            while self._read(MasterCommand.GET_VALID):
+                self._write(MasterCommand.CLEAR)
+
+        self._write(MasterCommand.ID, self.mID)
+
     def _set_address(self, address):
         lower = 0xFFFFFF & address
         upper = 0xFF & (address >> 24)
