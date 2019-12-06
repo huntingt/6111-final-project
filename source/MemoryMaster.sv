@@ -44,7 +44,7 @@ module MemoryMaster(
             default: out = 32'hxxxxxxxx;
         endcase
 
-        bus.smTaken = !rx_valid;
+        bus.smTaken = !rx_valid && (bus.smID == bus.msID);
     end
 
     always_ff @(posedge clock) begin
