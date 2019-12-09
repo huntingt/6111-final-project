@@ -39,6 +39,9 @@ class RayTracer:
     def reset(self):
         self.setConfig(ConfigField.RESET, True)
 
+    def flush(self):
+        self.setConfig(ConfigField.FLUSH, True)
+
     def busy(self):
         return self.getConfig(ConfigField.BUSY)
 
