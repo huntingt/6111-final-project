@@ -71,6 +71,8 @@ module RayUnit #(
     logic memoryReady;
     logic outOfBounds;
 
+    logic getBackground;
+
     logic [DATA_WIDTH-1:0] material;
     logic [DATA_WIDTH-1:0] pixel;
 
@@ -92,8 +94,7 @@ module RayUnit #(
         writeReady = memoryReady;
         traverseReady = memoryReady & !write;
 
-        //TODO: is this stable?
-        pixel = outOfBounds ? 0 : material;
+        pixel = material;
 
         busy = state != IDLE;
         ready = !busy;
@@ -116,6 +117,8 @@ module RayUnit #(
                     q[i] <= rayQ[i];
                     v[i] <= rayV[i];
                 end
+
+                getBackground <= 0;
             end
         end else if (state == TRAVERSE_START) begin
             if (traverseReady) begin
@@ -123,7 +126,7 @@ module RayUnit #(
             end
         end else if (state == TRAVERSE_FINISH) begin
             if (traverseReady) begin
-                if (material == 0) begin
+                if (material == 0 && !getBackground) begin
                     state <= STEP_START;
                 end else begin
                     state <= WRITE;
@@ -135,12 +138,10 @@ module RayUnit #(
             end
         end else if (state == STEP_FINISH) begin
             if (stepReady) begin
-                if (outOfBounds) begin
-                    state <= WRITE;
-                end else begin
-                    state <= TRAVERSE_START;
-                    q <= qp;
-                end
+                getBackground <= outOfBounds;
+                
+                state <= TRAVERSE_START;
+                q <= qp;
             end
         end else if (state == WRITE) begin
             if (writeReady) begin
@@ -178,6 +179,7 @@ module RayUnit #(
         .treeAddress(treeAddress),
         .flush(flush),
         .traverse(traverse),
+        .outOfBounds(getBackground),
         .position(q),
         .depth(depth),
         .material(material),

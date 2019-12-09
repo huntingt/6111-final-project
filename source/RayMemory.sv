@@ -25,6 +25,7 @@ module RayMemory #(
     // Control signal to start traversing the octree and find
     // the depth and material at the position.
     input logic traverse,
+    input logic outOfBounds,
     input logic [POSITION_WIDTH-1:0] position [2:0],
     // Depth in the octree where 0 is the root node, and
     // each addition number is one node further down in the
@@ -136,12 +137,17 @@ module RayMemory #(
                 bus.msAddress <= pixelAddress;
                 bus.msWrite <= 1;
             end else if (traverse) begin
-                state <= TRAVERSE_SEND;
+                if (outOfBounds) begin
+                    state <= MATERIAL_SEND;
+                    bus.msAddress <= materialAddress;
+                end else begin
+                    state <= TRAVERSE_SEND;
 
-                depth <= 1;
-                
-                bus.msAddress <= treeAddress + ADDRESS_WIDTH'(octantSelect);
-                bus.msWrite <= 0;
+                    depth <= 1;
+                    
+                    bus.msAddress <= treeAddress + ADDRESS_WIDTH'(octantSelect);
+                    bus.msWrite <= 0;
+                end
             end
         end else if (state == PIXEL_SEND) begin
             if (busSent) begin
@@ -155,9 +161,15 @@ module RayMemory #(
             if (busReceived) begin
                 if (bus.smData[DATA_WIDTH-1:DATA_WIDTH-MATERIAL_MASK_SIZE] == '1) begin
                     // this is a material
-                    state <= MATERIAL_SEND;
-                    bus.msAddress <= materialAddress +
-                        ADDRESS_WIDTH'(bus.smData[MATERIAL_ADDRESS_WIDTH-1:0]);
+                    // check if this is spacial case 0
+                    if (bus.smData[MATERIAL_ADDRESS_WIDTH-1:0] == 0) begin
+                        state <= IDLE;
+                        material <= 0;
+                    end else begin
+                        state <= MATERIAL_SEND;
+                        bus.msAddress <= materialAddress +
+                            ADDRESS_WIDTH'(bus.smData[MATERIAL_ADDRESS_WIDTH-1:0]);
+                    end
                 end else begin
                     // this is a node
                     state <= TRAVERSE_SEND;

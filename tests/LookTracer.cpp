@@ -24,6 +24,7 @@ int main() {
     // Maps material index to greyscale color
     MemoryArray material = MemoryArray(materialAddress, 256, latency);
     material.loadFile("generate/chr_old.mat");    
+    material.write(0, 0xaa0000);
 
     MemoryArray tree = MemoryArray(treeAddress, 1024, latency);
     tree.loadFile("generate/chr_old.oc");
