@@ -65,6 +65,7 @@ module RayMemory #(
     // MARTERIAL_(SEND/RECIEVE) - similar to TRAVERSE
     enum logic[2:0] {
         IDLE,
+        CACHE_SEARCH,
         PIXEL_SEND,
         TRAVERSE_SEND,
         TRAVERSE_RECIEVE,
@@ -75,11 +76,17 @@ module RayMemory #(
     // used to select the correct octant from an octree node
     logic [TREE_OCTANT_SELECT-1:0] octantSelect;
 
+    logic [POSITION_WIDTH-1:0] cacheQ [2:0];
+    logic [3:0] cacheDepth;
+    logic [DATA_WIDTH-1:0] cacheNode [POSITION_WIDTH-1:0];
+
     // set whether bus is currently receiving
     logic busReceiving;
     logic busReceived;
     logic busSending;
     logic busSent;
+    
+    logic [3:0] dSelect;
 
     always_comb begin
         ready = state == IDLE;
@@ -90,16 +97,12 @@ module RayMemory #(
         // selecting the bits at depth, then packing them
         // into a value that will be used to select the octant
         // in each octree node
-        octantSelect = state == IDLE ? 
+        dSelect = 4'(POSITION_WIDTH - 1) - depth;
+        octantSelect =
             {
-                position[2][POSITION_WIDTH - 1],
-                position[1][POSITION_WIDTH - 1],
-                position[0][POSITION_WIDTH - 1]
-            } :
-            {
-                position[2][POSITION_WIDTH - depth - 1],
-                position[1][POSITION_WIDTH - depth - 1],
-                position[0][POSITION_WIDTH - depth - 1]
+                position[2][dSelect],
+                position[1][dSelect],
+                position[0][dSelect]
             };
 
         busReceiving =
@@ -123,12 +126,11 @@ module RayMemory #(
     end
 
     always_ff @(posedge clock) begin
-        if (flush) begin
-            //TODO: nothing needs to be done yet
-        end
-
         if (reset) begin
             state <= IDLE;
+            cacheDepth <= 0;
+        end else if (flush) begin
+            cacheDepth <= 0;
         end else if (state == IDLE) begin
             if (writePixel) begin
                 state <= PIXEL_SEND;
@@ -141,14 +143,24 @@ module RayMemory #(
                     state <= MATERIAL_SEND;
                     bus.msAddress <= materialAddress;
                 end else begin
-                    state <= TRAVERSE_SEND;
-
-                    depth <= 1;
-                    
-                    bus.msAddress <= treeAddress + ADDRESS_WIDTH'(octantSelect);
-                    bus.msWrite <= 0;
+                    state <= CACHE_SEARCH;
+                    depth <= 0;
                 end
             end
+        end else if (state == CACHE_SEARCH) begin
+            if (depth >= cacheDepth
+                || cacheQ[0][dSelect] != position[0][dSelect]
+                || cacheQ[1][dSelect] != position[1][dSelect]
+                || cacheQ[2][dSelect] != position[2][dSelect]) begin
+                state <= TRAVERSE_SEND;
+                
+                bus.msAddress <= treeAddress + (depth == 0 ?
+                    ADDRESS_WIDTH'(octantSelect) :
+                    ADDRESS_WIDTH'({cacheNode[depth-1] , octantSelect}));
+                bus.msWrite <= 0;
+            end
+
+            depth <= depth + 1;
         end else if (state == PIXEL_SEND) begin
             if (busSent) begin
                 state <= IDLE;
@@ -170,12 +182,20 @@ module RayMemory #(
                         bus.msAddress <= materialAddress +
                             ADDRESS_WIDTH'(bus.smData[MATERIAL_ADDRESS_WIDTH-1:0]);
                     end
+                
+                    cacheDepth <= depth - 1;
+                    cacheQ[0] <= position[0];
+                    cacheQ[1] <= position[1];
+                    cacheQ[2] <= position[2];
                 end else begin
                     // this is a node
                     state <= TRAVERSE_SEND;
                     bus.msAddress <= treeAddress +
                         ADDRESS_WIDTH'({bus.smData, octantSelect});
                     
+                    // save to cache
+                    cacheNode[depth-1] <= bus.smData;
+            
                     depth <= depth + 1;
                 end
             end
@@ -195,8 +215,8 @@ module RayMemory #(
                 state, bus.msValid, bus.msTaken, bus.msAddress, bus.msData, bus.smValid, bus.smTaken, bus.smData);
         end
         if (0) begin
-            $display("octant: %b, depth: %d, position: {%d, %d, %d}",
-                octantSelect, depth, position[0], position[1], position[2]);
+            $display("octant: %b, depth: %d, position: {%d, %d, %d}, cacheDepth: %d",
+                octantSelect, depth, position[0], position[1], position[2], cacheDepth);
         end
     end
 endmodule: RayMemory

@@ -12,7 +12,7 @@ int main() {
     const int width = 500;
     const int height = 500;
 
-    const int latency = 1;
+    const int latency = 5;
 
     const int timeout = 500000000;
     const int frameAddress = 4096;
@@ -35,7 +35,7 @@ int main() {
     dut.attach(&material);
     dut.attach(&frame);
     
-    const double right = 47;
+    const double right = 50;
     const double down = 13;
 
     Ray q = Ray(0, 25000, 30000);

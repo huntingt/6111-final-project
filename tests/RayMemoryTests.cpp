@@ -155,32 +155,18 @@ TEST_CASE("test RayMemory operation") {
         REQUIRE( depth == 2 );
         REQUIRE( material == 0x11 );
     }
-}
+    SECTION("test sequential access"){
+        auto [depth0, material0] = dut.traverse({40000, 0, 40000});
+        REQUIRE( depth0 == 1 );
+        REQUIRE( material0 == 5 );
 
-TEST_CASE("test RayMemory on diagonal tree") {
-    RayMemory dut = RayMemory(128, 0, 1024);
-    
-    // material map gives the material index as its
-    // properety
-    MemoryArray material = MemoryArray(0, 256);
-    for (int i = 0; i < 256; i++) {
-        int color = i + (i<<8) + (i<<16);
-        material.write(i, color);
-    }
+        auto [depth1, material1] = dut.traverse({31000, 0, 33000});
+        REQUIRE( depth1 == 2 );
+        REQUIRE( material1 == 0x11 );
 
-    MemoryArray tree = MemoryArray(1024, 1024);
-    tree.loadFile("tests/diagonal.oc");
+        auto [depth2, material2] = dut.traverse({0, 31000, 33000});
 
-    MemoryArray frame = MemoryArray(512, 512);
-
-    dut.attach(&tree);
-    dut.attach(&material);
-    dut.attach(&frame);
-    
-    SECTION("xmax, ymax vector regression") {
-        dut.traverse({40000, 40000, 0});
-        auto [depth, material] = dut.traverse({60481, 60481, 32768});
-        REQUIRE( depth == 1 );
-        REQUIRE( material == 0xFFFFFF );
+        REQUIRE( depth2 == 2 );
+        REQUIRE( material2 == 0x12 );
     }
 }
