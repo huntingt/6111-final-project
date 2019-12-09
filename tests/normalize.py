@@ -14,7 +14,7 @@ def sainvsqrt(n):
     toShift = bits - int(log(n,2))
     y = 1 << (toShift//2)
 
-    for i in range(5):
+    for i in range(2):
         # three in fixed point
         three = 3<<bits
 
@@ -44,8 +44,12 @@ def ratio(n):
     true = invsqrt(x)*2**16
     return approx / true
 
-ns = np.linspace(256, 10000, num=1000)
+ns = np.linspace(256, 10000, num=5000)
 plt.plot(ns, ratio(ns))
 plt.plot(ns, [1]*len(ns))
 plt.plot(ns, [0.87]*len(ns))
+plt.xlabel("Original Norm")
+plt.ylabel("New Norm")
+plt.title("Evaluation of Ray Normalization Algorithm")
+plt.tight_layout()
 plt.show()

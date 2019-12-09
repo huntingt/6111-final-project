@@ -1,3 +1,4 @@
+/* verilator lint_off UNOPTFLAT */
 module RayTracerTB #(
     parameter POSITION_WIDTH=16,
 
@@ -88,3 +89,4 @@ module RayTracerTB #(
         .configPort(cfg),
         .memoryPort(mem));
 endmodule: RayTracerTB
+/* verilator lint_on UNOPTFLAT */

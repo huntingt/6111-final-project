@@ -82,7 +82,9 @@ module RayMemory #(
 
     always_comb begin
         ready = state == IDLE;
+        /* verilator lint_off WIDTH */
         bus.msID = MASTER_ID;
+        /* verilator lint_on WIDTH */
 
         // selecting the bits at depth, then packing them
         // into a value that will be used to select the octant
@@ -102,11 +104,14 @@ module RayMemory #(
         busReceiving =
                state == TRAVERSE_RECIEVE
             || state == MATERIAL_RECIEVE;
+        
+        /* verilator lint_off WIDTH */
         bus.smTaken =
                busReceiving
             && (bus.smID == MASTER_ID)
             && bus.smValid;
         busReceived = bus.smTaken && bus.smValid;
+        /* verilator lint_on WIDTH */
 
         busSending =
                state == TRAVERSE_SEND
