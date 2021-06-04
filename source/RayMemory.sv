@@ -48,7 +48,6 @@ module RayMemory #(
     );
 
     parameter TREE_OCTANT_SELECT = 3;
-    parameter TREE_NODE_ADDRESS_SIZE = DATA_WIDTH;
 
     parameter MATERIAL_MASK_SIZE = DATA_WIDTH - MATERIAL_ADDRESS_WIDTH;
 

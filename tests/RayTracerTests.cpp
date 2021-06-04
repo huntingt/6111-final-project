@@ -75,7 +75,7 @@ TEST_CASE("test config port"){
 }
 
 TEST_CASE("test small size") {
-    RayTracer dut = RayTracer(100);
+    RayTracer dut = RayTracer(256);
 
     const int materialAddress = 0;
     const int treeAddress = 256;

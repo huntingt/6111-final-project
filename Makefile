@@ -1,5 +1,6 @@
+VK_C11 = 0
+
 VFLAGS = -Wall\
-		 -CFLAGS "-std=c++17"\
 		 -Isource\
 		 -Ibenches\
 		 -Mdir verilated
